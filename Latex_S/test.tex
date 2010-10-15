@@ -1,0 +1,94 @@
+\documentclass{article}
+\usepackage{graphicx}
+
+\author{Your Name}
+
+\title{Test Document}
+
+\begin{document}
+
+\maketitle
+
+\section{sec1}
+This is a test document
+\subsection{sec2}
+This is a test document2
+\subsubsection{sec3}
+This is a test document3
+\paragraph{paragraph}
+xxxx
+
+
+
+\begin{itemize}
+\item First thing
+\item Second thing
+\item Third thing
+\end{itemize}
+
+\begin{enumerate}
+\item First numbered thing
+\item Second numbered thing
+\item Third numbered thing
+\end{enumerate}
+
+\begin{quote}
+There are two ways to incorporate images into your LaTeX document, and both use the graphicx package by means of putting the command  \textbackslash usepackage\{graphicx\}  near the top of the LaTeX file, just after the documentclass command.
+\end{quote}
+
+\begin{description} 
+\item[First item] text 
+\item[Second item] dfe df
+\item[Third item] dfexxdf
+\item[4th item] sxe
+\end{description} 
+
+\makebox[\textwidth]{\hrulefill}
+\begin{verbatim} 
+#include <iostream>
+using namespace std;
+int main()
+{
+    cout<<"hello world"<<endl;
+}
+\end{verbatim}
+\makebox[\textwidth]{\hrulefill}
+\begin{verbatim} 
+from GChartWrapper import Pie
+from GChartWrapper import Pie3D
+
+p=Pie3D( [1,2,3,4] ).label('A','B','C','D').color('00dd00')
+p.save('a.png')
+
+p=Pie([5,10,15]).title('Hello Pie').color('red','lime').label('hello', 'world','Hello World')
+p.save('b.png')
+\end{verbatim}
+\makebox[\textwidth]{\hrulefill}
+
+
+\begin{table}[hbtp]
+\caption{This table is an example}
+\begin{center}
+\begin{tabular}{c|c|c}
+First row, first column & First row second column & First row, third column \\ \hline
+Second row, first column & Second row, second column & Second row, third column \\
+Third row, first column & Third row, second column & Third row, third column \\
+\multicolumn{3}{c}{…}
+\end{tabular}
+\end{center}
+\label{exampletable}
+\end{table}
+
+
+
+\begin{figure}[hbtp]
+\caption{Img B}
+\begin{center}
+\includegraphics[scale=0.75]{b.png}
+\end{center}
+\label{fig1}
+\end{figure}
+
+
+
+\end{document}
