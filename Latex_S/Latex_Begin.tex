@@ -1,0 +1,278 @@
+\documentclass[a4paper,11pt,onecolumn]{article}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\usepackage{CJK}         % CJK 中文支持
+\usepackage{geometry} % 利用 geometry 可以很方便的设置页面的大小。
+\usepackage{fancyhdr} % 用 fancyhdr 来设置页眉和页脚十分方便，而且可以在配合 CCT、CJK来设置中文的页眉等。
+\usepackage{fancyvrb} % 用来得到一些加框的列举环境
+\usepackage{fancybox} % 提供了 \shadowbox, \doublebox, \ovalbox 和 \Ovalbox 四个命令来生成不同形状的盒子。
+\usepackage{amsmath,amsfonts,amssymb,graphicx}    % EPS 图片支持
+\usepackage{subfigure}   % 使用子图形
+\usepackage{indentfirst} % 中文段落首行缩进
+\usepackage{bm}          % 公式中的粗体字符（用命令\boldsymbol）
+\usepackage{multicol}    % 正文双栏
+\usepackage{picins}      % 图片嵌入段落宏包 比如照片
+\usepackage{abstract}    % 2栏文档，一栏摘要及关键字宏包
+\usepackage{anysize} % 对于像 book 等双面版式来说，这里的 left 和 right 再奇偶页会互换。
+\usepackage{hyperref} % 文献引用的宏包
+\usepackage{listings}\lstloadlanguages{C,C++,matlab,mathematica} %程序清单关键字宏包
+\usepackage{color} % 可以产生有颜色的符号
+\usepackage{units} % 用于美化单位及分式
+\usepackage{tabularx} % 用于灵活地控制表格的生成
+\usepackage{mathrsfs} % 用于产生一种数学用的花体字
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 关于各个宏包的说明。
+% CJK宏包中重要的命令为：
+%    \CJKcaption{GB} 章节标题为中文
+%    \CJKfamily{hei}{} %song, fs, kai, hei, songsl, fssl, kaisl, heisl
+%    CTEX中文套装中定义了六种中文字体，分别是
+%     song, 宋体
+%    fs,   仿宋
+%    kai,  楷书
+%    hei,  黑体    %以上这四种字体都是可以用的，并且还有对应的斜体可用（\it 即可）
+%    li,   隶书    %但看来这个是不能用的，怎样解决我还不知道，还不懂怎样安装字体
+%    yuan, 幼圆    %这个也不能用
+% geometry宏包重要的命令为：
+%    \geometry{height=10in,a4paper,body={14cm,21cm}} %具体内容由自己改写
+% fancyhdr宏包重要的命令为：
+%    如下面所用到的页眉和页脚的定义，很典型的
+% fancyvrb宏包重要的命令为：
+%    很多，应用方法很灵活。具体查阅其说明文档
+% fancybox宏包重要的命令为：
+%    \shadowbox{}和\doublebox{}，括号里面可以包含一个minipage环境，可以含一个图片
+% amsmath,amsfonts,amssymb,graphicx宏包重要的命令为：
+%    这是一组非常重要的包，最重要的几个命令为：
+%    \dfrac{}{} %用于显示一种分数，我在一个自定义命令中用过一次
+%    \includegraphics[width=,height=]{} %插入图片的一般命令
+%    有其它的一些常用的符号
+% subfigure宏包重要的命令为：
+%    \subfigure[子标题]{\includegraphics[width=]{}} %详情见下
+% indentfirst宏包重要的命令为：
+%    用了这个宏包之后，只要在后面连续打两个回车，就可以开始一个新的段，非常方便
+% multicol宏包重要的命令为：
+%    \begin{multicols}{2}
+%    .......
+%    \end{multicols}
+%    把文字放在这个环境中，就可以使这些文字分成两栏，非常好用。
+% picins宏包重要的命令为：
+%    \parpic(宽度，高度)(水平偏移，垂直偏移)[选项][位置]{图形}
+% abstract宏包重要的命令为：
+%    这个宏包我还没发现有有用的命令，但鉴于摘要的重要性，就保留它了。
+% anysize宏包重要的命令为：
+%    \marginsize{25mm}{25mm}{15mm}{15mm}
+%    用了anysize宏包以后，就可以用它方便地定义两面文档的装订对齐问题了，它会自动切换
+%    详情见下
+% hyperref宏包重要的命令为：
+%    用了这个宏包之后，会发现所有的参考文献和交叉引用都具有了超链接功能，太棒了！
+% listings宏包重要的命令为：
+%    命令有一两个非常实用，主要是画框和控制程序清单字体的选项
+%    它有一个很重要的特性，是可以把各种语言的关键字突显出来，很不错
+% units宏包重要的命令为：
+%    $\nicefrac[\mathcal]{A}{B}$
+%    \nicefrac{A}{B}
+%    \nicefrac[\textit]{A}{B}
+%    $\unitfrac[#1]{#2}{#3}$
+%    $\unit[#1]{\it #2}$
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%纸张版式的定义
+%\marginsize{25mm}{25mm}{15mm}{15mm} %用了anysize宏包以后，就可以用它方便地定义两面文档的装订对齐问题了，它会自动切换，即可代替下邻两句
+\geometry{a4paper, hmargin={3.7cm, 3.3cm}, vmargin={1.8cm, 2.5cm}}
+\renewcommand{\baselinestretch}{1.5} %定义行间距
+\parindent 24pt %重新定义缩进长度
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  自定义命令区
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%定义字体及字号
+\newcommand{\song}{\CJKfamily{song}} % 宋体
+\newcommand{\fs}{\CJKfamily{fs}} % 仿宋体
+\newcommand{\kai}{\CJKfamily{kai}} % 楷体
+\newcommand{\hei}{\CJKfamily{hei}} % 黑体
+\newcommand{\chuhao}{\fontsize{42pt}{\baselineskip}\selectfont}
+\newcommand{\xiaochuhao}{\fontsize{36pt}{\baselineskip}\selectfont}
+\newcommand{\yihao}{\fontsize{28pt}{\baselineskip}\selectfont}
+\newcommand{\erhao}{\fontsize{21pt}{\baselineskip}\selectfont}
+\newcommand{\xiaoerhao}{\fontsize{18pt}{\baselineskip}\selectfont}
+\newcommand{\sanhao}{\fontsize{15.75pt}{\baselineskip}\selectfont}
+\newcommand{\sihao}{\fontsize{14pt}{\baselineskip}\selectfont}
+\newcommand{\xiaosihao}{\fontsize{12pt}{\baselineskip}\selectfont}
+\newcommand{\wuhao}{\fontsize{10.5pt}{\baselineskip}\selectfont}
+\newcommand{\xiaowuhao}{\fontsize{9pt}{\baselineskip}\selectfont}
+\newcommand{\liuhao}{\fontsize{7.875pt}{\baselineskip}\selectfont}
+\newcommand{\qihao}{\fontsize{5.25pt}{\baselineskip}\selectfont}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%下面这一块程序用于去掉图片标题中的冒号
+\makeatletter
+\long\def\@makecaption#1#2{%
+ \vskip\abovecaptionskip
+ \sbox\@tempboxa{#1\quad #2}%
+ \ifdim \wd\@tempboxa >\hsize
+   #1\quad #2\par
+ \else
+   \global \@minipagefalse
+   \hb@xt@\hsize{\hfil\box\@tempboxa\hfil}%
+ \fi
+ \vskip\belowcaptionskip}
+\makeatother
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%下面这一片区域用来定义程序清单环境中的样式细节设置
+\lstset
+{
+frameround=tttt, % define the frame style
+%frameshape={RYRYNYYYY}{yny}{yny}{RYRYNYYYY}
+basicstyle=\small, % print whole listing small
+%keywordstyle=\color{red}\underbar, % underlined bold red keywords
+%identifierstyle={}, % nothing happens to other identifiers
+%commentstyle=\color{white}, % white comments
+%stringstyle=\ttfamily, % typewriter type for strings
+%stringspaces=false % no special string spaces
+}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 关于去掉首页的页码的方法
+% 在\maketitle后加上\thispagestyle{empty}就可以了
+% 想让所有的页都无页码，则如下操作
+% \makeatletter
+% \let\ps@plain=\ps@empty
+% \makeatother
+% \pagestyle{empty}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 把proof环境中的关键字proof改为"证明"的方法
+% \proofname{证明}
+% 或
+% \begin{proof}{证明}
+%  ........
+% \end{proof}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%这一块用来美化行内公式时靠字太紧的现象
+\newcommand{\f}[1]{\,\,$#1$\,}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%这一块用来美化输出一行序列时的各元素项靠得太紧的情况
+\newcommand{\seq}[4]{{\,\,(#1\,\,\,}{#2\,\,\,}{#3\,\,\,}{#4)}}
+\newcommand{\se}[4]{{\,\,#1\,\,\,}{#2\,\,\,}{#3\,\,\,}{#4\,}}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  脚注的行号默认是从每一章开始计数的，现在要求从每一页开始计数
+% \makeatletter\@addtoreset{footnote}{page}
+% \makeatother
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 这一句用来把脚注的序号由*号改成阿拉伯数字，当然也可换成其它几种类型之一
+%  \renewcommand{\thefootnote}{\arabic{footnote}}
+%  \renewcommand{\thepage}{--\roman{page}--} %变化非常多，应用很灵活
+%  编号方式一共有五种：\arabic, \roman, \Roman, \alph, \Alph
+% 常用的计数器有\thepage<-->page, \thechapter<-->chapter, \theequation<-->equation
+% \thefootnote<-->footnote, \thefigure<-->figure, \thetable<-->table
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 此行代码用来美化分式的输出
+%\newcommand{\tgfrac}[2]{\raisebox{0.1cm}{\dfrac{\raisebox{-0.07cm}{\it #1}}{\raisebox{-0.01cm}{\it #2}}}\,}
+% 另外，在有\usepackage{units}的情况下，还可以用\nicefrac[\mathcal]{#1}{#2}进行左右型的分式输出
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 此行使标号引用的形式更好看一点
+%\newcommand{\re}[1]{\,(\ref{#1})\,} %后面就用在要加参考文献的地方
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 此行使文献引用以上标形式显示
+\newcommand{\supercite}[1]{\textsuperscript{\cite{#1}}} %后面就用在要加参考文献的地方
+% 写上\supercite{自定的符号}即可
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 简化列举环境中的打字的繁琐
+%\newcommand{\tgitem}{\vspace{-2.8mm}\item}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 正文两栏环境不允许float环境，比如 figure, table。所以重新定义
+% figure，使之可以浮动到你想要的位置。table也同样，把figure改为
+% table就可以。
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\newenvironment{figurehere}
+% {\def\@captype{figure}}
+%  {}
+%\makeatother
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  文章正文
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\begin{document}
+\begin{CJK*}{GBK}{song}
+\CJKcaption{GB}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 此行代码用来美化汉字中数字及字母的输出
+%\newcommand{\m}[1]{\,#1\,}
+% 另外，在有\usepackage{units}的情况下，还可以用\nicefrac{#1}{#2}进行左右型的分式输出
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 此行代码用来美化汉字中破折号的输出
+%\newcommand{\pzh}{\,－\!\!－\,} %破折号，在这里定义的原因是－为全角符号，只能在CJK声明后才能识别
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 此行代码用来美化汉字中小括号和中括号的输出
+%\newcommand{\xkh}[1]{\!\!（#1）\!\!}
+%\newcommand{\zkh}[1]{\!\!［#1］\!\!}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 这一块用来记录一些很细微的经验
+% *\!缩小1/3个半角字符宽，\,增加1/3个半角字符宽，\quad 增加一个全角字符宽，\qquad 增加两个全角字符宽
+% *中文的破折号用“－\!\!－”来表示。
+% *$A\stackrec{1;/\!/}{=}B$会得到使平行号骑在等号上面的效果
+% *空心方块如下表示：\hfill\blacksquare
+% *要得到数学中的花体字，得\usepackage{mathrsfs} 然后后面再用$\mathscr{ABCD..}$引用
+% *公式中用\text{-}表示短横线
+% *用\usepackage{letteine}使文章的英文第一个字母变大
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{CJK*} 
+\end{document} 

@@ -1,0 +1,121 @@
+\documentclass{article}
+\usepackage{CJK}
+\usepackage{geometry}
+\usepackage{upgreek}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{graphicx}
+
+\begin{document}
+\begin{CJK}{GBK}{hei}
+
+\author{Joe.Zhou}
+\title{Mysql Replication Troubleshoot}
+\maketitle
+
+%%Mysql Replication Troubleshoot
+
+\begin{enumerate}
+\item 在实际应用中，常常会只同步数据库中的一部分表,如何实现？\\
+
+在slave端 在my.cnf中可以用replicate-wild-do-table=tab.xx或replicate-do-table=tab.xx指定备份特定的表
+
+\item 在实际应用中，常常会只同步数据库中的一部分表,如果一个sql语句会同时操作需要同步和不需要同步的表时，该sql语句照常会同步到slave服务器上执行，而且会执行失败，同步过程就会被挂起。\\
+
+解决方法：
+可以更换binlog的复制模式，将其从基于SQL语句的复制(statement-based replication, SBR)切换到
+基于行的复制(row-based replication, RBR)或混合模式复制(mixed-based replication, MBR)。
+在RBR模式下，binlog中可以不记录执行的sql语句的上下文相关的信息，仅仅只需要记录那一条记录被修改了，修改成什么样了。
+所以在RBR模式下的日志内容会非常清楚的记录下每一行数据修改的细节，非常容易理解。
+而且不会出现某些特定情况下的存储过程，或function，以及trigger的调用和触发无法被正确复制的问题。
+RBR任何情况都可以被复制，这对复制来说是最安全可靠的。\\
+MySQL Version require 5.1.XX or above \\
+详细见 mysql\_binlog\_format.pdf
+
+
+\item 当只同步一部分表时，如果有一张新增加的表需要同步，该如何操作。
+    能否不重启服务的情况下进行该操作？\\
+
+因为\\
+\begin{minipage}[c]{0.8\textwidth}
+\fbox{
+\parbox{\textwidth}{the --replicate-* options, can be set only when the slave server starts.}
+}
+\end{minipage} \\
+\url{http://dev.mysql.com/doc/refman/5.0/en/replication-options-slave.html}\\
+所以想要不重启新增表同步只能在设计数据库时考虑：
+
+\begin{enumerate}
+\item 可以预先在my.cnf文件中写入replicate-wild-do-table=sync\%.xxx\%，令新增的表名符合sync\%.xxx\%形式即好
+\item 在数据库设计时可设定将要需要同步的表和不需要同步的表分别放在不同的DB中,用replicate-do-db=test的形式同步
+\end{enumerate}
+
+
+\item 出现slave 连不通master的情况"connectting to master" \\
+
+确保以下两行命令的用户名和密码一致 backup\&123456
+
+\begin{verbatim}
+--run in master--
+GRANT REPLICATION SLAVE,RELOAD,SUPER ON *.*
+TO backup@10.10.10.128
+IDENTIFIED BY '123456'
+\end{verbatim}
+\begin{verbatim}
+--run in slave--
+CHANGE MASTER TO
+MASTER_HOST='10.10.10.132',
+MASTER_USER='backup',
+MASTER_PASSWORD='123456',
+MASTER_LOG_FILE='mysql-bin.000004',
+MASTER_LOG_POS=98;
+\end{verbatim}
+
+
+\item 在slave服务器中出现同步错误
+
+手动在slave服务器中执行以下SQL语句
+\begin{verbatim}
+mysql> slave stop;
+mysql> set GLOBAL SQL_SLAVE_SKIP_COUNTER=1;
+mysql> slave start;
+\end{verbatim}
+
+
+\item 在master to master（主主）备份中出现的问题（多主自增长ID重复）的问题 \\
+
+解决方法：\\
+我们只要保证两台服务器上插入的自增长数据不同就可以了
+如：A查奇数ID，B插偶数ID，当然如果服务器多的话，你可以定义算法，只要不同就可以了
+
+在这里我们在A,B上加入参数，以实现奇偶插入
+
+A：my.cnf上加入参数
+\begin{verbatim}
+auto_increment_offset = 1
+auto_increment_increment = 2
+\end{verbatim}
+这样A的auto\_increment字段产生的数值是：1, 3, 5, 7, …等奇数ID了
+
+B：my.cnf上加入参数
+\begin{verbatim}
+auto_increment_offset = 2
+auto_increment_increment = 2
+\end{verbatim}
+这样B的auto\_increment字段产生的数值是：2, 4, 6, 8, …等偶数ID了
+
+可以看出，你的auto\_increment字段在不同的服务器之间绝对不会重复，
+所以Master-Master结构就没有任何问题了。
+当然，你还可以使用3台，4台，或者N台服务器，只要保证
+\begin{verbatim}
+auto_increment_increment = N 
+\end{verbatim}
+再设置一下auto\_increment\_offset为适当的初始值就可以了，
+那样，我们的MySQL可以同时有几十台主服务器，而不会出现自增长ID重复。
+
+
+\end{enumerate}
+
+\end{CJK} 
+\end{document} 

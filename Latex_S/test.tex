@@ -1,4 +1,10 @@
 \documentclass{article}
+\usepackage{CJK}
+\usepackage{geometry}
+\usepackage{upgreek}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage{url}
 \usepackage{graphicx}
 
 \author{Your Name}
@@ -6,11 +12,19 @@
 \title{Test Document}
 
 \begin{document}
+\begin{CJK}{GBK}{hei}
 
 \maketitle
 
 \section{sec1}
 This is a test document
+
+\begin{eqnarray}
+a&=&b+c\\
+d&=&e+f
+\end{eqnarray}
+$\frac{a}{b}$
+$\pi=\lim_{n\to\infty}\frac{P_n}{d}$
 \subsection{sec2}
 This is a test document2
 \subsubsection{sec3}
@@ -36,15 +50,15 @@ xxxx
 There are two ways to incorporate images into your LaTeX document, and both use the graphicx package by means of putting the command  \textbackslash usepackage\{graphicx\}  near the top of the LaTeX file, just after the documentclass command.
 \end{quote}
 
-\begin{description} 
-\item[First item] text 
+\begin{description}
+\item[First item] text
 \item[Second item] dfe df
 \item[Third item] dfexxdf
 \item[4th item] sxe
-\end{description} 
+\end{description}
 
 \makebox[\textwidth]{\hrulefill}
-\begin{verbatim} 
+\begin{verbatim}
 #include <iostream>
 using namespace std;
 int main()
@@ -53,7 +67,7 @@ int main()
 }
 \end{verbatim}
 \makebox[\textwidth]{\hrulefill}
-\begin{verbatim} 
+\begin{verbatim}
 from GChartWrapper import Pie
 from GChartWrapper import Pie3D
 
@@ -73,7 +87,7 @@ p.save('b.png')
 First row, first column & First row second column & First row, third column \\ \hline
 Second row, first column & Second row, second column & Second row, third column \\
 Third row, first column & Third row, second column & Third row, third column \\
-\multicolumn{3}{c}{鈥
+\multicolumn{3}{c}{foo bar}
 \end{tabular}
 \end{center}
 \label{exampletable}
@@ -89,6 +103,17 @@ Third row, first column & Third row, second column & Third row, third column \\
 \label{fig1}
 \end{figure}
 
+\noindent\fbox{\parbox{\linewidth-2\fboxsep-2\fboxrule}{%
+\begin{equation}\label{eq:frame0}
+f(x)=\int_1^{\infty}\dfrac{1}{x^2}\,\mathrm{d}x=1
+\end{equation}%
+}}
 
+\begin{minipage}[c]{0.8\textwidth}
+\fbox{
+\parbox{\textwidth}{这里是内容，但如果很长长长长长长长长长长长长长长长长长长长长，就会顶到外面去了～～8过～再长都能框住你～～}
+}
+\end{minipage}
 
-\end{document}
+\end{CJK}
+\end{document} 

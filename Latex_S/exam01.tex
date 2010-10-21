@@ -1,0 +1,74 @@
+% 第一次上机练习
+\documentclass[11pt]{article}
+\usepackage{CJK}
+\usepackage{color}              % 支持彩色
+\renewcommand{\baselinestretch}{1.2}
+
+\begin{document}
+\begin{CJK*}{GBK}{song}
+\CJKtilde\CJKindent
+
+\centerline{\LaTeX~第一次作业}\bigskip\bigskip
+
+注意：
+
+\newcounter{forlist}
+\begin{list}{\arabic{forlist}.}
+            {\setlength{\topsep}{2mm}
+             \setlength{\listparindent}{0pt}
+             \setlength{\labelsep}{5pt}
+             \setlength{\itemsep}{2pt}
+             \setlength{\parsep}{5pt}
+             \usecounter{forlist}}
+\item 将作业以附件形式发送至电子信箱:
+      \textcolor{blue}{latex@math.ecnu.edu.cn}\\
+      邮件主题为~你的\textcolor{blue}{学号}和\textcolor{blue}{姓名}.
+
+\item 附件为~2~个文件：\TeX~源文件 与~pdf~文件,
+     文件主名都是~你的\textcolor{blue}{学号}.
+
+\item 下列的横线以下部分为本次测试的实际内容：
+\end{list}
+
+\noindent\hrulefill\\
+
+首先定义首行缩进为两个汉字的宽度, 并将行间距扩大~1.2 倍. 注意:
+这里的标点符号全部用英文状态下的, 同时每个英文标点后面要留空.
+还有就是汉字与英文之间要适当留空, 如: 你好~hello 你好吗?
+
+然后输入一些特殊字符:\quad
+\#\quad \$\quad  \%\quad  \{\quad \}\quad  \~{}\quad \_{}\quad
+\^{}\quad\textbackslash \quad\& \\[4mm]
+这里是强制换行, 并且适当增加了行间距, 约~4mm.
+
+再输入一些特殊字符:\quad
+\S \quad \P \quad \dag \quad \ddag\quad\copyright \quad \pounds\quad
+\TeX \quad \LaTeX \quad \LaTeXe
+
+下面测试连字号的使用:\quad Prof. D-E. Knuth
+有个中文名---高德纳~(参见教材第~3--4 页).
+
+输入一些非英文字母:\quad
+{\oe}  \quad {\AE} \quad {\aa} \quad {\o} \quad {\L} \quad {\ss} \quad !` \quad ?`
+
+输入一些重音符:\quad
+\`o \quad \'M \quad \^b \quad \~p \quad \=k \quad
+\v{\j} \quad \t{ao} \quad \d{o}
+
+下面将行间距扩大到~1.6 倍, 看看效果怎样.
+\renewcommand{\baselinestretch}{1.6}\normalsize
+
+话说人生大势, 成败与否, 在乎一心. 通俗地说来, 无论富
+家儿郎或寒门子弟, 无论市井小民或工商巨贾,
+每个人都在用他自己的理念决定、进入他的生存状态.
+
+将行间距改回~1.2 倍, 并将字体改为黑体.
+\renewcommand{\baselinestretch}{1.2}\normalsize
+\CJKfamily{hei}
+
+话说人生大势, 成败与否, 在乎一心. 通俗地说来, 无论富
+家儿郎或寒门子弟, 无论市井小民或工商巨贾,
+每个人都在用他自己的理念决定、进入他的生存状态.
+
+\end{CJK*}
+\end{document}
