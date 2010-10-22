@@ -7,6 +7,7 @@
 \usepackage{url}
 \usepackage{graphicx}
 
+
 \begin{document}
 \begin{CJK}{GBK}{hei}
 
@@ -61,9 +62,11 @@ mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%'
 
 检查log
 \begin{verbatim}
-# tail -n 10 /var/log/mysqld.log 
+# tail -n 10 /var/log/mysqld.log
 \end{verbatim}
-如果是 
+
+\begin{enumerate}
+\item 如果是
 \begin{verbatim}
 Error: 'Access denied for user 'root'@'10.10.10.132' (using password: YES)'
 \end{verbatim}
@@ -87,16 +90,19 @@ MASTER_LOG_POS=98;
 \end{verbatim}
 
 
-如果是
+\item 如果是
 \begin{verbatim}
- Error: 'Lost connection to MySQL server at 'reading initial communication packet'
+Error: 'Lost connection to MySQL server at 'reading initial communication packet'
 \end{verbatim}
 检查防火墙
 
 $[$mysqld$]$ 段增加一个启动参数
 \begin{verbatim}
-skip-name-resolve 
+skip-name-resolve
 \end{verbatim}
+
+\end{enumerate}
+
 
 \item $[$ERROR$]$ Slave I/O thread: error connecting to master 'root@10.10.10.128:3306': Error: 'Lost connection to MySQL server at 'reading initial communication packet', system error: 113' \\
 
