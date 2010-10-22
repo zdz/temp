@@ -51,10 +51,24 @@ MySQL Version require 5.1.XX or above \\
 \item 在数据库设计时可设定将要需要同步的表和不需要同步的表分别放在不同的DB中,用replicate-do-db=test的形式同步
 \end{enumerate}
 
+\item 默认情况下不支持用户通过非本机连接上数据库服务器人解决方法：\\
+\begin{verbatim}
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%'
+       IDENTIFIED BY 'MyPassword' WITH GRANT OPTION;
+\end{verbatim}
 
 \item 出现slave 连不通master的情况"connectting to master" \\
 
-确保以下两行命令的用户名和密码一致 backup\&123456
+检查log
+\begin{verbatim}
+# tail -n 10 /var/log/mysqld.log 
+\end{verbatim}
+如果是 
+\begin{verbatim}
+Error: 'Access denied for user 'root'@'10.10.10.132' (using password: YES)'
+\end{verbatim}
+
+确保以下两行命令的用户名和密码一致 backup\&123456  和支持用户通过非本机连接上数据库服务器
 
 \begin{verbatim}
 --run in master--
@@ -73,14 +87,64 @@ MASTER_LOG_POS=98;
 \end{verbatim}
 
 
-\item 在slave服务器中出现同步错误
+如果是
+\begin{verbatim}
+ Error: 'Lost connection to MySQL server at 'reading initial communication packet'
+\end{verbatim}
+检查防火墙
 
-手动在slave服务器中执行以下SQL语句
+$[$mysqld$]$ 段增加一个启动参数
+\begin{verbatim}
+skip-name-resolve 
+\end{verbatim}
+
+\item $[$ERROR$]$ Slave I/O thread: error connecting to master 'root@10.10.10.128:3306': Error: 'Lost connection to MySQL server at 'reading initial communication packet', system error: 113' \\
+
+查看CentOS防火墙状态
+\begin{verbatim}
+/etc/init.d/iptables status
+\end{verbatim}
+如果防火墙开启着则将其关闭
+\begin{verbatim}
+/etc/init.d/iptables stop
+\end{verbatim}
+
+\item ERROR 2003 (HY000) Can't connect to MySQL Server on 'x.x.x.x' (113) \\
+
+解决方法同上
+
+\item 在slave服务器中出现同步错误 如：Slave\_SQL\_Running: No \\
+
+\begin{enumerate}
+\item 手动同步
+\begin{verbatim}
+mysql> stop slave;
+mysql> show master status;
++----------------+----------+--------------+------------------+
+| File           | Position | Binlog_Do_DB | Binlog_Ignore_DB |
++----------------+----------+--------------+------------------+
+| bin_log.000001 |     1195 | test         | mysql            |
++----------------+----------+--------------+------------------+
+1 row in set (0.00 sec)
+
+mysql> CHANGE MASTER TO
+        MASTER_HOST='10.10.10.128',
+        MASTER_USER='root',
+        MASTER_PASSWORD='123456',
+        MASTER_LOG_FILE='bin_log.000001',
+        MASTER_LOG_POS=1195;
+mysql> start slave;
+
+\end{verbatim}
+
+\item 手动在slave服务器中执行以下SQL语句
 \begin{verbatim}
 mysql> slave stop;
 mysql> set GLOBAL SQL_SLAVE_SKIP_COUNTER=1;
 mysql> slave start;
 \end{verbatim}
+
+\end{enumerate}
 
 
 \item 在master to master（主主）备份中出现的问题（多主自增长ID重复）的问题 \\
@@ -109,13 +173,12 @@ auto_increment_increment = 2
 所以Master-Master结构就没有任何问题了。
 当然，你还可以使用3台，4台，或者N台服务器，只要保证
 \begin{verbatim}
-auto_increment_increment = N 
+auto_increment_increment = N
 \end{verbatim}
 再设置一下auto\_increment\_offset为适当的初始值就可以了，
 那样，我们的MySQL可以同时有几十台主服务器，而不会出现自增长ID重复。
 
-
 \end{enumerate}
 
-\end{CJK} 
+\end{CJK}
 \end{document} 
