@@ -6,7 +6,8 @@
 \usepackage{indentfirst}
 \usepackage{url}
 \usepackage{graphicx}
-
+\usepackage{listings}
+\usepackage{fancybox}
 
 \begin{document}
 \begin{CJK}{GBK}{hei}
@@ -39,11 +40,14 @@ MySQL Version require 5.1.XX or above \\
     能否不重启服务的情况下进行该操作？\\
 
 因为\\
-\begin{minipage}[c]{0.8\textwidth}
-\fbox{
-\parbox{\textwidth}{the --replicate-* options, can be set only when the slave server starts.}
-}
-\end{minipage} \\
+\begin{Sbox}
+\begin{minipage}{13cm}
+\begin{verbatim}
+the --replicate-* options, can be set only when the slave server starts.
+\end{verbatim}
+\end{minipage}
+\end{Sbox}
+\fbox{\TheSbox} \\
 \url{http://dev.mysql.com/doc/refman/5.0/en/replication-options-slave.html}\\
 所以想要不重启新增表同步只能在设计数据库时考虑：
 

@@ -6,11 +6,11 @@
 \usepackage{indentfirst}
 \usepackage{url}
 \usepackage{graphicx}
-
+\usepackage{fancybox}
 \usepackage{fancyhdr}
 \pagestyle{fancy}
-\lhead{\blhlh}
-\chead{\bchch}
+\lhead{ff}
+\chead{xx}
 \rhead{\bfseries The performance of new graduates}
 \lfoot{From: K. Grant}
 \cfoot{To: Dean A. Smith}
@@ -20,8 +20,6 @@
 
 \author{Your Name}
 \title{Test Document}
-
-
 
 \begin{document}
 \begin{CJK}{GBK}{hei}
@@ -126,6 +124,15 @@ f(x)=\int_1^{\infty}\dfrac{1}{x^2}\,\mathrm{d}x=1
 \parbox{\textwidth}{这里是内容，但如果很长长长长长长长长长长长长长长长长长长长长，就会顶到外面去了～～8过～再长都能框住你～～}
 }
 \end{minipage}
+
+\begin{tabular}{| p{2cm} | c |}
+        \hline
+        \begin{verbatim}
+        code
+        \end{verbatim}
+        & description
+        \\ \hline
+\end{tabular}
 
 
 \end{CJK}
