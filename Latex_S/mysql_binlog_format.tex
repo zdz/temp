@@ -5,11 +5,13 @@
 \usepackage{amsmath}
 \usepackage{indentfirst}
 
+\pagenumbering{Roman}
+
 \begin{document}
 \begin{CJK}{GBK}{hei}
 \CJKtilde\CJKindent
 
-\author{Joe.Zhou}
+\author{}
 \title{MYSQL5.1复制参数binlog\_format}
 \maketitle
 
@@ -94,7 +96,7 @@ mysql> SET GLOBAL binlog_format = 'MIXED';
 \end{enumerate}
 
 \item RBR 的优点：
-   
+
 \begin{enumerate}
     \item 任何情况都可以被复制，这对复制来说是最安全可靠的
     \item 和其他大多数数据库系统的复制技术一样
@@ -131,4 +133,4 @@ mysql> SET GLOBAL binlog_format = 'MIXED';
 \noindent 注：采用 RBR 模式后，能解决很多原先出现的主键重复问题。
 
 \end{CJK}
-\end{document} 
+\end{document}
