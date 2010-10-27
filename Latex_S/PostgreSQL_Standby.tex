@@ -1,0 +1,249 @@
+\documentclass[a4paper]{article}
+\usepackage{CJK}
+\usepackage{geometry}
+\usepackage{upgreek}
+\usepackage{amsmath}
+%\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{fancybox}
+
+\pagenumbering{Roman}
+
+\begin{document}
+\begin{CJK}{GBK}{hei}
+
+\author{OSDBA}
+\title{PostgreSQL9.0 standby数据库介绍及搭建方法}
+\maketitle
+
+PostgreSQL数据库提供了类似Oracle的standby数据库的功能。PostgreSQL9.0 standby数据库在应用WAL日志的同时，也可以提供只读服务，这是PostgreSQL9.0中最激动人心的功能，
+这个功能在oracle数据库中也只是最新版本11g中才有的新功能。这个功能在oracle中叫active dataguard，在PostgreSQL中称为hot standby。在利用日志恢复数据的同时可以用只读的方式打开数据库，用户可以在备用数据库上进行查询、报表等操作，也可用做读写分离。
+在 PostgreSQL9.0之前，也可以搭建standby数据库，但standby数据库只能处于恢复状态中，不能打开，也不支持只读打开。
+而这种情况在9.0之后彻底改变了。
+\\
+PostgreSQL 9.0中日志传送的方法有两种:
+
+\begin{enumerate}
+\item 基于文件（base-file）的传送方式，这种方式是PostgreSQL9.0之前就提供的方法。
+也就是服务器写完一个WAL日志文件后，才把WAL日志文件拷贝到standby数据库上去应用。
+\item 流复制（streaming replication）的方法，这是PostgreSQL9.0才提供的新方法。
+这个方法就是事务提交后，就会把生成的日志异步的传送到standby数据库上应用，
+这比基本文件的日志传送方法有更低的数据延迟。
+\end{enumerate}
+
+基于文件（base-file）的传送方式在PostgreSQL8.X中就有的方式，这里不就介绍了，这里主要介绍流复制的standby的搭建方法，设置步骤如下：
+
+\begin{enumerate}
+\item 对主数据库做一个基础备份，然后把基础备份拷贝到standby机器，把基础备份恢复到standby机器上
+
+\item 在主库上设置
+\begin{verbatim}
+wal_level = hot_standby。
+\end{verbatim}
+
+\item 在主数据库上设置wal\_keep\_segments为一个足够大的值，以防止主库生成WAL日志太快，
+    日志还没有来得及传送到standby，就会循环覆盖了；
+    
+\item 在主数据库上设置max\_wal\_sender参数，这个参数是控制主库可以最多有多少个并发的standby数据库；
+
+\item 在主数据库上建一个超级用户，standby数据库会使用这个用户连接到主库上拖WAL日志。
+
+\item 在主数据库上的pg\_hba.conf中设置listen\_addresses和连接验证选项，允许standby数据库连接到主库上来拖WAL日志数据，\\
+如下所示：
+\begin{verbatim}
+# TYPE DATABASE USER CIDR-ADDRESS METHOD
+host replication repl 192.168.1.100/32 md5
+\end{verbatim}
+
+其中数据库名必须填“replication”，
+这是一个为standby连接使用了一个虚拟的数据库名称。
+用户repl就是步骤5上给standby连接使用的在主库上建的一个超级用户。
+192.168.1.100就是standby数据库的IP地址。
+
+
+\item 在备份上建一个recovery.conf，设置以下几项：
+\begin{verbatim}
+standby_mode = 'on'
+primary_conninfo = 'host=127.0.0.1 port=5432 user=repl password=replpwd'
+trigger_file = '/opt/pgstb/trigger_activestandby'
+\end{verbatim}
+standby\_mode设置为'on'，表明数据库恢复完成后，不会被找开，仍然处理等待日志的模式。
+primary\_conninfo上standby连接到主数据库所需要的连接串。
+   
+   
+\item 启动standby数据库，这样standby数据库就算搭建好了。
+\end{enumerate}
+
+下面以实际的例子，为看standby上如何搭建的，我把standby数据库与主数据库建在一台机器上。
+主数据库的数据目录为：/opt/pgpri，standby数据库的数据目录为/opt/pgstb。
+为了便于启动和停止PostgreSQL，在.bash\_profile文件中添加以下两行：
+\begin{verbatim}
+alias pgstart='pg_ctl -D $PGDATA start'
+alias pgstop='pg_ctl kill INT `head -1 $PGDATA/postmaster.pid`'
+\end{verbatim}
+
+在主数据库的/opt/pgpri/postgresql.conf文件中设置如下配置项：
+\begin{verbatim}
+wal_level = hot_standby
+max_wal_senders = 2
+wal_keep_segments = 32
+\end{verbatim}
+
+在主数据库中的/opt/pgpri/pg\_hba.conf中添加如下配置：
+\begin{verbatim}
+host replication repl 127.0.0.1/32 md5
+\end{verbatim}
+
+在数据库中建一个repl用户用于给standby连接主库使用：
+\begin{verbatim}
+#psql -d postgres
+postgres=# create user repl superuser password 'replpwd';
+CREATE ROLE
+\end{verbatim}
+
+重新启动主数据库，让配置生效：
+\begin{verbatim}
+osdba@osdba-laptop:/opt/pgpri$ pgstop
+LOG: received fast shutdown request
+LOG: aborting any active transactions
+LOG: autovacuum launcher shutting down
+osdba@osdba-laptop:/opt/pgpri$ LOG: shutting down
+LOG: database system is shut down
+
+osdba@osdba-laptop:/opt/pgpri$ pgstart
+server starting
+osdba@osdba-laptop:/opt/pgpri$ LOG: database system was shut down at 2010-08-21 22:33:29 CST
+LOG: database system is ready to accept connections
+LOG: autovacuum launcher started
+\end{verbatim}
+
+
+对主数据库做一个基础备份：
+先用
+\begin{verbatim}
+select pg_start_backup();
+\end{verbatim}
+命令把数据库切换到备份状态：
+\begin{verbatim}
+osdba@osdba-laptop:/opt/pgpri$ psql -d postgres
+psql (9.0beta4)
+Type "help" for help.
+
+postgres=# SELECT pg_start_backup('/opt/pgstb');
+ pg_start_backup
+-----------------
+ 0/1000020
+(1 row)
+
+postgres=#
+\end{verbatim}
+
+由于我的standby数据库与主库在一台机器上，这时只需要把主数据库目录拷贝到备库目录就可以了：
+\begin{verbatim}
+osdba@osdba-laptop:/opt$ cp -r pgpri/* pgstb/.
+osdba@osdba-laptop:/opt$ cd pgstb/.
+osdba@osdba-laptop:/opt/pgstb$ ls
+backup_label global pg_hba.conf pg_multixact 
+pg_stat_tmp pg_tblspc PG_VERSION postgresql.conf 
+postmaster.pid
+base pg_clog pg_ident.conf pg_notify pg_subtrans 
+pg_twophase pg_xlog postmaster.opts
+\end{verbatim}
+
+拷贝完成后，结束主库的备份状态:
+\begin{verbatim}
+postgres=# SELECT pg_stop_backup();
+NOTICE: WAL archiving is not enabled; 
+you must ensure that all required WAL segments are copied 
+through other means to complete the backup
+ pg_stop_backup
+----------------
+ 0/1000288
+(1 row)
+\end{verbatim}
+
+修改备库的配置文件/opt/pgstb/postgresql.conf文件中的相关项为如下内容：
+\begin{verbatim}
+port = 5433
+hot_standby = on
+\end{verbatim}
+
+由于备库与主库在同一台机器上，给备份指定一个不同的监听端口，这里修改为5433，主库是默认的5432端口，
+把其中的hot\_standby设置为on。
+
+拷贝示例文件/usr/local/pgsql/share/recovery.conf.sample到/opt/pgstb目录下，
+然后改名成recovery.conf，修改相关的配置项为如下内容：
+\begin{verbatim}
+standby_mode = 'on'
+primary_conninfo = 'host=127.0.0.1 port=5432 user=repl password=replpwd'
+trigger_file = '/opt/pgstb/trigger_activestb'
+\end{verbatim}
+
+删除原先从主库上过来的/opt/pgstb/postmaster.pid文件，然后启动备库：
+\begin{verbatim}
+osdba@osdba-laptop:/opt/pgstb$ rm postmaster.pid
+osdba@osdba-laptop:/opt/pgstb$ export PGDATA=/opt/pgstb
+osdba@osdba-laptop:/opt/pgstb$ echo $PGDATA
+/opt/pgstb
+osdba@osdba-laptop:/opt/pgstb$ pgstart
+server starting
+osdba@osdba-laptop:/opt/pgstb$ 
+LOG: database system was interrupted; last known up at 2010-08-21 22:43:04 CST
+LOG: entering standby mode
+LOG: redo starts at 0/1000020
+LOG: record with zero length at 0/10000B0
+LOG: streaming replication successfully connected to primary
+LOG: consistent recovery state reached at 0/2000000
+LOG: database system is ready to accept read only connections
+\end{verbatim}
+
+这时可以看到备库已经可以接受只读连接了。
+
+在主库上做一些操作:
+\begin{verbatim}
+osdba@osdba-laptop:/opt/pgstb$ psql -p 5432 -d postgres
+psql (9.0beta4)
+Type "help" for help.
+
+postgres=# create table t (id int primary key,name varchar(20));
+NOTICE: CREATE TABLE / PRIMARY KEY will create implicit index "t_pkey" for table "t"
+CREATE TABLE
+postgres=# insert into t (1,'xxxxxxx');
+ERROR: syntax error at or near "1" at character 16
+STATEMENT: insert into t (1,'xxxxxxx');
+ERROR: syntax error at or near "1"
+LINE 1: insert into t (1,'xxxxxxx');
+                       ^
+postgres=# insert into t values (1,'xxxxxxx');
+INSERT 0 1
+postgres=# insert into t values (2,'xxxxxxx');
+INSERT 0 1
+postgres=#
+\end{verbatim}
+然后在备库上看是否同步到了备库:
+
+\begin{verbatim}
+osdba@osdba-laptop:/opt/pgstb$ psql -p 5433 -d postgres
+psql (9.0beta4)
+Type "help" for help.
+postgres=# \d
+       List of relations
+ Schema | Name | Type | Owner
+--------+------+-------+-------
+ public | t | table | osdba
+(1 row)
+
+postgres=# select * from t;
+ id | name
+----+---------
+  1 | xxxxxxx
+  2 | xxxxxxx
+(2 rows)
+\end{verbatim}
+可以看到数据已经同步到了备库，基本上感觉不到延迟。
+
+
+\end{CJK}
+\end{document} 
