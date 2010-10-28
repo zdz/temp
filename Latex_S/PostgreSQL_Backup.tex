@@ -8,7 +8,7 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{fancybox}
-
+\usepackage{float}
 \pagenumbering{Roman}
 
 \begin{document}
@@ -17,10 +17,7 @@
 \title{PostgreSQL 热备方式简述}
 \maketitle
 
-
-Postgres是非常不错的一款开源的数据库.具有很好的性能.
-说到数据库,就有的备份和导入的话题.
-备份也分为很多种方式.
+本文主要简单介绍PostgreSQL的备份机制。
 
 \begin{enumerate}
 \item PostgreSQL备份的几种方式
@@ -33,26 +30,39 @@ Postgres是非常不错的一款开源的数据库.具有很好的性能.
         PostgreSQL提供 在线备份以及即时恢复(PITR) 机制来实现增量备份。在任何时候，PostgreSQL 都在集群的数据目录的 pg\_xlog/ 子目录里维护着一套预写日志（WAL）。 这些日志记录着每一次对数据库的数据文件的修改的细节。这些日志存在是为了防止崩溃：如果系统崩溃， 数据库可以通过"重放"上次检查点以来的日志记录以恢复数据库的完整性。 但是，日志的存在让它还可以用于第三种备份数据库的策略：我们可以组合文件系统备份与 WAL 文件的备份。 如果需要恢复，我们就恢复备份，然后重放备份了的WAL文件，把备份恢复到当前的时间。
     \end{enumerate}
 
-\end{enumerate}
-
-PostgreSQL 热备的实现的几种方案
+\item PostgreSQL 热备的实现的几种方案
 
 \begin{enumerate}
-\item Shared Disk Failover 
+\item Shared Disk Failover
 
 它的实现主要通过多个服务器共享使用同一个磁盘阵列，可以避免了只有一个数据库的副本同步开销。
 如果主数据库服务器出现故障，备用服务器就好像是从崩溃数据库恢复一样，可以加载并启动数据库。
 这种方式可以做到快速的failover而不丢失任何数据。
+这种方案也可以用NFS来代替磁盘阵列。
+\begin{figure}[H]
+\caption{Shared Disk Failover}
+\begin{center}
+\includegraphics[scale=0.5]{pic/Shared_Storage.png}
+\end{center}
+\end{figure}
+
 
 \item File System (Block-Device) Replication
 
 文件系统复制，是第一种方案的变形，主要是通过两台机器做文件系统镜像来实现备份。
 在Linux下DRBD是常用的文件系统复制方案。
 
+\begin{figure}[!hbtp]
+\caption{File System (Block-Device) Replication}
+\begin{center}
+\includegraphics[scale=0.75]{pic/Storage_Mirroring.png}
+\end{center}
+\end{figure}
+
 \item Warm and Hot Standby Using Point-In-Time Recovery (PITR)
 
 由于PostgreSQL提供WAL机制来实现增量备份，从而可以将这些WAL文件传送到slave服务器重播来实现PostgreSQL 的热备。
-
+由于WAL传输有数据延所以在failover时可能造成数据丢失。
 按PostgreSQL WAL文件的传送方式不同来实现不同的两种热备方式：
 \begin{enumerate}
 \item 基于文件（base-file）的传送方式，这种方式是PostgreSQL9.0之前就提供的方法。
@@ -62,6 +72,13 @@ PostgreSQL 热备的实现的几种方案
 这比基本文件的日志传送方法有更低的数据延迟。
 \end{enumerate}
 
+\begin{figure}[hbtp]
+\caption{Warm and Hot Standby Using Point-In-Time Recovery (PITR)}
+\begin{center}
+\includegraphics[scale=0.75]{pic/PITR.png}
+\end{center}
+\end{figure}
+
 \item Trigger-Based Master-Standby Replication
 
 这种热备方式设定主从服务器，所有的修改查询发向master服务器，数据改变后以异步的方式发向standby服务器，
@@ -70,17 +87,23 @@ PostgreSQL 热备的实现的几种方案
 Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备份粒度能细到每个表，
 由于是采用异步的复制方式，在master服务器crash时可能造成数据丢失。
 \begin{figure}[hbtp]
-\caption{Slony-I}
+\caption{Trigger-Based Master-Standby Replication}
 \begin{center}
-\includegraphics[scale=0.75]{Slony-I.jpg}
+\includegraphics[scale=0.75]{pic/Trigger_Based.png}
 \end{center}
-\label{fig1}
 \end{figure}
 
 \item Statement-Based Replication Middleware
 
-基于这种方式，程序将会拦截第一个SQL操作，如果是查询操作就将它发送到一个或所有的服务器，
-如果是修改操作，则将它发送到所有的服务器让每个服务器各自执行SQL操作。
+基于这种方式，程序将会拦截每一个SQL请求操作，如果是查询读操作就将它发送到其中任意一个服务器，
+如果是修改写操作，则将它发送到所有的服务器让每个服务器各自执行SQL修改写入操作。
+
+\begin{figure}[hbtp]
+\caption{Statement-Based Replication Middleware}
+\begin{center}
+\includegraphics[scale=0.75]{pic/Middleware.png}
+\end{center}
+\end{figure}
 
 \item Asynchronous Multimaster Replication
 
@@ -88,24 +111,43 @@ Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备
 主机间以异步的方式来互相同步数据，如果多个主机修改数据就可能造成数据冲突，
 这就需要用户手动解决或制定特定的规则来回避冲突问题。
 
+\begin{figure}[hbtp]
+\caption{Asynchronous Multimaster Replication}
+\begin{center}
+\includegraphics[scale=0.75]{pic/Async_Multi_Repl.png}
+\end{center}
+\end{figure}
+
 \item Synchronous Multimaster Replication
 
 跟前一种方案差不多，不过是采用同步的方式来同步数据，
 这种方式下，如果写操作过多，程序就会频繁加锁，从而导致性能降低。
+对于这种方案可以通过设置一写多读或者用共享硬盘减少通信来达到提高性能的目的。
+
+\begin{figure}[hbtp]
+\caption{Synchronous Multimaster Replication}
+\begin{center}
+\includegraphics[scale=0.75]{pic/Sync_Multi_Repl.png}
+\end{center}
+\end{figure}
 
 \end{enumerate}
 
-
-\begin{figure}[hbtp]
+几种复制对比:
+\begin{figure}[H]
 \centering
 \caption{High Availability, Load Balancing, and Replication Feature Matrix}
 \hspace*{-0.5in}
-\includegraphics[scale=0.4]{PostgreSQL_hotS.PNG}
+\includegraphics[scale=0.4]{pic/PostgreSQL_hotS.PNG}
 \label{fig2}
 \end{figure}
 
 
-http://momjian.us/main/writings/pgsql/replication.pdf
+\end{enumerate}
+
+\noindent\textbf{Reference：}\\
+\url{http://www.postgresql.org/docs/9.0/static/index.html} 
+
 
 \end{CJK}
 \end{document} 
