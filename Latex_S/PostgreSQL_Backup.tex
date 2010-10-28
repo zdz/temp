@@ -35,14 +35,25 @@ Postgres是非常不错的一款开源的数据库.具有很好的性能.
 
 \end{enumerate}
 
-PostgreSQL 热备的实现
+PostgreSQL 热备的实现的几种方案
 
-由于PostgreSQL提供WAL机制来实现增量备份，从而可以将这些WAL segment文件传送到slave服务器来实现PostgreSQL 的热备。
+\begin{enumerate}
+\item Shared Disk Failover 
 
+它的实现主要通过多个服务器共享使用同一个磁盘阵列，可以避免了只有一个数据库的副本同步开销。
+如果主数据库服务器出现故障，备用服务器就好像是从崩溃数据库恢复一样，可以加载并启动数据库。
+这种方式可以做到快速的failover而不丢失任何数据。
 
-按PostgreSQL WAL segment文件的传送方式不同来实现不同的两种热备方式。\\
-PostgreSQL 9.0中日志传送的方法有两种:
+\item File System (Block-Device) Replication
 
+文件系统复制，是第一种方案的变形，主要是通过两台机器做文件系统镜像来实现备份。
+在Linux下DRBD是常用的文件系统复制方案。
+
+\item Warm and Hot Standby Using Point-In-Time Recovery (PITR)
+
+由于PostgreSQL提供WAL机制来实现增量备份，从而可以将这些WAL文件传送到slave服务器重播来实现PostgreSQL 的热备。
+
+按PostgreSQL WAL文件的传送方式不同来实现不同的两种热备方式：
 \begin{enumerate}
 \item 基于文件（base-file）的传送方式，这种方式是PostgreSQL9.0之前就提供的方法。
 也就是服务器写完一个WAL日志文件后，才把WAL日志文件拷贝到standby数据库上去应用。
@@ -51,34 +62,50 @@ PostgreSQL 9.0中日志传送的方法有两种:
 这比基本文件的日志传送方法有更低的数据延迟。
 \end{enumerate}
 
+\item Trigger-Based Master-Standby Replication
 
+这种热备方式设定主从服务器，所有的修改查询发向master服务器，数据改变后以异步的方式发向standby服务器，
+而standby服务器可以分担一些数据库的查询操作请求。
 
+Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备份粒度能细到每个表，
+由于是采用异步的复制方式，在master服务器crash时可能造成数据丢失。
+\begin{figure}[hbtp]
+\caption{Slony-I}
+\begin{center}
+\includegraphics[scale=0.75]{Slony-I.jpg}
+\end{center}
+\label{fig1}
+\end{figure}
 
+\item Statement-Based Replication Middleware
 
+基于这种方式，程序将会拦截第一个SQL操作，如果是查询操作就将它发送到一个或所有的服务器，
+如果是修改操作，则将它发送到所有的服务器让每个服务器各自执行SQL操作。
 
-=========================================================================================================================
-\begin{enumerate}
-\item 完全备份
+\item Asynchronous Multimaster Replication
 
-  这是大多数人常用的方式，它可以备份整个数据库，包含用户表、系统表、索引、视图和存储过程等所有数据库对象。
-但它需要花费更多的时间和空间，所以，一般推荐一周做一次完全备份。
+多主机异步复制，这种方式下多个主机独自工作，独自接受SQL查询修改，当某一主机数据改变后，
+主机间以异步的方式来互相同步数据，如果多个主机修改数据就可能造成数据冲突，
+这就需要用户手动解决或制定特定的规则来回避冲突问题。
 
+\item Synchronous Multimaster Replication
 
-\item 事务日志备份
-
-  事务日志是一个单独的文件，它记录数据库的改变，备份的时候只需要复制自上次备份以来对数据库所做的改变，所以只需要很少的时间。
-
-
-\item 差分备份
-
-  差分备份也叫增量备份。它是只备份数据库一部分的另一种方法，它不使用事务日志，相反，它使用整个数据库的一种新映象。
-它比最初的完全备份小，因为它只包含自上次完全备份以来所改变的数据库。它的优点是存储和恢复速度快。推荐每天做一次差异备份。
-
-
-\item 文件备份
-
-  针对第一种完全备份来说,我们又可以采取两种方式.自动备份和手动备份.
+跟前一种方案差不多，不过是采用同步的方式来同步数据，
+这种方式下，如果写操作过多，程序就会频繁加锁，从而导致性能降低。
 
 \end{enumerate}
 
-\end{CJK} \end{document} 
+
+\begin{figure}[hbtp]
+\centering
+\caption{High Availability, Load Balancing, and Replication Feature Matrix}
+\hspace*{-0.5in}
+\includegraphics[scale=0.4]{PostgreSQL_hotS.PNG}
+\label{fig2}
+\end{figure}
+
+
+http://momjian.us/main/writings/pgsql/replication.pdf
+
+\end{CJK}
+\end{document} 
