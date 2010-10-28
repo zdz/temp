@@ -23,7 +23,7 @@
 \item PostgreSQL备份的几种方式
     \begin{enumerate}
         \item SQL dump\\
-        SQL 转储的方法采用的主意是创建一个文本文件，这个文本里面都是 SQL 命令，当把这个文件回馈给服务器时，将重建与转储时状态一样的数据库.
+        SQL 转储的方法采用的方式是创建一个文本文件，这个文本里面都是 SQL 命令，把这个文件回馈给slave服务器，”重播“这些SQL操作后，将重建与转储时状态一样的数据库.
         \item File system level backup\\
         文件级别的备份是直接拷贝PostgreSQL用于存放数据库数据的文件来备份数据库，由于限制较多，一般不推荐使用。
         \item Continuous archiving\\
@@ -81,8 +81,8 @@
 
 \item Trigger-Based Master-Standby Replication
 
-这种热备方式设定主从服务器，所有的修改查询发向master服务器，数据改变后以异步的方式发向standby服务器，
-而standby服务器可以分担一些数据库的查询操作请求。
+这种热备方式设定主从服务器，所有的修改查询发向master服务器，数据改变后以异步的方式将改变的数据发向standby服务器让其更新同步，
+而在均衡负载方面，standby服务器可以分担一些数据库的查询操作请求。
 
 Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备份粒度能细到每个表，
 由于是采用异步的复制方式，在master服务器crash时可能造成数据丢失。
@@ -95,7 +95,7 @@ Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备
 
 \item Statement-Based Replication Middleware
 
-基于这种方式，程序将会拦截每一个SQL请求操作，如果是查询读操作就将它发送到其中任意一个服务器，
+基于中间件这种方式，程序将会拦截每一个SQL请求操作，如果是查询读操作就将它发送到其中任意一个服务器，
 如果是修改写操作，则将它发送到所有的服务器让每个服务器各自执行SQL修改写入操作。
 
 \begin{figure}[hbtp]
@@ -146,7 +146,7 @@ Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备
 \end{enumerate}
 
 \noindent\textbf{Reference：}\\
-\url{http://www.postgresql.org/docs/9.0/static/index.html} 
+\url{http://www.postgresql.org/docs/9.0/static/index.html}
 
 
 \end{CJK}
