@@ -23,7 +23,8 @@
 \item PostgreSQL备份的几种方式
     \begin{enumerate}
         \item SQL dump\\
-        SQL 转储的方法采用的方式是创建一个文本文件，这个文本里面都是 SQL 命令，把这个文件回馈给slave服务器，”重播“这些SQL操作后，将重建与转储时状态一样的数据库.
+        SQL 转储的方法采用的方式是创建一个文本文件，这个文本里面都是 SQL命令，
+        把这个文件回馈给slave服务器，”重播“这些SQL操作后，将重建与转储时状态一样的数据库.
         \item File system level backup\\
         文件级别的备份是直接拷贝PostgreSQL用于存放数据库数据的文件来备份数据库，由于限制较多，一般不推荐使用。
         \item Continuous archiving\\
