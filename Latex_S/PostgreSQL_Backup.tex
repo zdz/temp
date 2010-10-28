@@ -1,11 +1,62 @@
-\documentclass[11pt]{article}
+\documentclass[a4paper]{article}
 \usepackage{CJK}
+\usepackage{geometry}
+\usepackage{upgreek}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{fancybox}
+
+\pagenumbering{Roman}
+
 \begin{document}
 \begin{CJK}{GBK}{hei}
+\author{Joe.zhou}
+\title{PostgreSQL 热备方式简述}
+\maketitle
+
+
 Postgres是非常不错的一款开源的数据库.具有很好的性能.
 说到数据库,就有的备份和导入的话题.
 备份也分为很多种方式.
 
+\begin{enumerate}
+\item PostgreSQL备份的几种方式
+    \begin{enumerate}
+        \item SQL dump\\
+        SQL 转储的方法采用的主意是创建一个文本文件，这个文本里面都是 SQL 命令，当把这个文件回馈给服务器时，将重建与转储时状态一样的数据库.
+        \item File system level backup\\
+        文件级别的备份是直接拷贝PostgreSQL用于存放数据库数据的文件来备份数据库，由于限制较多，一般不推荐使用。
+        \item Continuous archiving\\
+        PostgreSQL提供 在线备份以及即时恢复(PITR) 机制来实现增量备份。在任何时候，PostgreSQL 都在集群的数据目录的 pg\_xlog/ 子目录里维护着一套预写日志（WAL）。 这些日志记录着每一次对数据库的数据文件的修改的细节。这些日志存在是为了防止崩溃：如果系统崩溃， 数据库可以通过"重放"上次检查点以来的日志记录以恢复数据库的完整性。 但是，日志的存在让它还可以用于第三种备份数据库的策略：我们可以组合文件系统备份与 WAL 文件的备份。 如果需要恢复，我们就恢复备份，然后重放备份了的WAL文件，把备份恢复到当前的时间。
+    \end{enumerate}
+
+\end{enumerate}
+
+PostgreSQL 热备的实现
+
+由于PostgreSQL提供WAL机制来实现增量备份，从而可以将这些WAL segment文件传送到slave服务器来实现PostgreSQL 的热备。
+
+
+按PostgreSQL WAL segment文件的传送方式不同来实现不同的两种热备方式。\\
+PostgreSQL 9.0中日志传送的方法有两种:
+
+\begin{enumerate}
+\item 基于文件（base-file）的传送方式，这种方式是PostgreSQL9.0之前就提供的方法。
+也就是服务器写完一个WAL日志文件后，才把WAL日志文件拷贝到standby数据库上去应用。
+\item 流复制（streaming replication）的方法，这是PostgreSQL9.0才提供的新方法。
+这个方法就是事务提交后，就会把生成的日志异步的传送到standby数据库上应用，
+这比基本文件的日志传送方法有更低的数据延迟。
+\end{enumerate}
+
+
+
+
+
+
+=========================================================================================================================
 \begin{enumerate}
 \item 完全备份
 
