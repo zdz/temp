@@ -50,7 +50,7 @@ the --replicate-* options, can be set only when the slave server starts.
 \end{minipage}
 \end{Sbox}
 \fbox{\TheSbox} \\
-\url{http://dev.mysql.com/doc/refman/5.0/en/replication-options-slave.html}\\
+见\url{http://dev.mysql.com/doc/refman/5.0/en/replication-options-slave.html}\\
 所以想要不重启新增表同步只能在设计数据库时考虑：
 
 \begin{enumerate}
@@ -68,7 +68,7 @@ mysql> GRANT ALL PRIVILEGES ON *.* TO 'root'@'%'
 
 检查log
 \begin{verbatim}
-# tail -n 10 /var/log/mysqld.log
+[root@localhost ~]# tail -n 10 /var/log/mysqld.log
 \end{verbatim}
 
 \begin{enumerate}
@@ -114,11 +114,11 @@ skip-name-resolve
 
 查看CentOS防火墙状态
 \begin{verbatim}
-/etc/init.d/iptables status
+[root@localhost ~]# /etc/init.d/iptables status
 \end{verbatim}
 如果防火墙开启着则将其关闭
 \begin{verbatim}
-/etc/init.d/iptables stop
+[root@localhost ~]# /etc/init.d/iptables stop
 \end{verbatim}
 
 \item ERROR 2003 (HY000) Can't connect to MySQL Server on 'x.x.x.x' (113) \\
