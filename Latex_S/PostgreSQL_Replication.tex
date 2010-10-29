@@ -14,7 +14,7 @@
 \begin{document}
 \begin{CJK}{GBK}{hei}
 \author{Joe.zhou}
-\title{PostgreSQL 热备方式简述}
+\title{PostgreSQL 热备简述}
 \maketitle
 
 本文主要简单介绍PostgreSQL的备份机制。
@@ -22,24 +22,30 @@
 \begin{enumerate}
 \item PostgreSQL备份的几种方式
     \begin{enumerate}
-        \item SQL dump\\
-        SQL 转储的方法采用的方式是创建一个文本文件，这个文本里面都是 SQL命令，
-        把这个文件回馈给slave服务器，”重播“这些SQL操作后，将重建与转储时状态一样的数据库.
-        \item File system level backup\\
+        \item SQL dump
+
+        SQL 转储的方法采用的方式是创建一个含有SQL语句命令的文本文件，
+        把这个文件回馈给slave服务器，“重放”这些SQL操作后，将重建与转储时状态一样的数据库.
+        \item File system level backup
+
         文件级别的备份是直接拷贝PostgreSQL用于存放数据库数据的文件来备份数据库，由于限制较多，一般不推荐使用。
-        \item Continuous archiving\\
-        PostgreSQL提供 在线备份以及即时恢复(PITR) 机制来实现增量备份。在任何时候，PostgreSQL 都在集群的数据目录的 pg\_xlog/ 子目录里维护着一套预写日志（WAL）。 这些日志记录着每一次对数据库的数据文件的修改的细节。这些日志存在是为了防止崩溃：如果系统崩溃， 数据库可以通过"重放"上次检查点以来的日志记录以恢复数据库的完整性。 但是，日志的存在让它还可以用于第三种备份数据库的策略：我们可以组合文件系统备份与 WAL 文件的备份。 如果需要恢复，我们就恢复备份，然后重放备份了的WAL文件，把备份恢复到当前的时间。
+
+        \item Continuous archiving
+
+        PostgreSQL提供 在线备份以及即时恢复(PITR) 机制来实现增量备份。在任何时候，PostgreSQL 都在集群的数据目录的 pg\_xlog/ 子目录里维护着一套预写日志WAL(Write Ahead Log)。 这些日志记录着每一次对数据库的数据文件的修改的细节。这些日志存在是为了防止崩溃：如果系统崩溃， 数据库可以通过“重放”上次检查点以来的日志记录以恢复数据库的完整性。 WAL日志的存在让它还可以用于第三种备份数据库的策略：我们可以组合文件系统备份与 WAL 文件的备份。 如果需要恢复，我们就恢复备份，然后重放备份了的WAL文件，把备份恢复到当前的时间。
+
     \end{enumerate}
 
-\item PostgreSQL 热备的实现的几种方案
+\item 基于PostgreSQL 备份方式的几种热备方案：
 
 \begin{enumerate}
 \item Shared Disk Failover
 
-它的实现主要通过多个服务器共享使用同一个磁盘阵列，可以避免了只有一个数据库的副本同步开销。
+它的实现主要通过多个服务器共享使用同一个磁盘阵列，从而可以避免了数据库的副本同步开销。
 如果主数据库服务器出现故障，备用服务器就好像是从崩溃数据库恢复一样，可以加载并启动数据库。
 这种方式可以做到快速的failover而不丢失任何数据。
-这种方案也可以用NFS来代替磁盘阵列。
+这种方案也可以用NFS(Network File System)来代替磁盘阵列。
+
 \begin{figure}[H]
 \caption{Shared Disk Failover}
 \begin{center}
@@ -50,7 +56,7 @@
 
 \item File System (Block-Device) Replication
 
-文件系统复制，是第一种方案的变形，主要是通过两台机器做文件系统镜像来实现备份。
+文件系统复制，是第一种方案的变形，主要是通过两台机器做文件系统镜像来实现复制备份。
 在Linux下DRBD是常用的文件系统复制方案。
 
 \begin{figure}[!hbtp]
@@ -66,7 +72,8 @@
 由于WAL传输有数据延所以在failover时可能造成数据丢失。
 按PostgreSQL WAL文件的传送方式不同来实现不同的两种热备方式：
 \begin{enumerate}
-\item 基于文件（base-file）的传送方式，这种方式是PostgreSQL9.0之前就提供的方法。
+\item 基于文件（base-file）的传送方式，
+这种方式是PostgreSQL9.0之前就提供的方法。
 也就是服务器写完一个WAL日志文件后，才把WAL日志文件拷贝到standby数据库上去应用。
 \item 流复制（streaming replication）的方法，这是PostgreSQL9.0才提供的新方法。
 这个方法就是事务提交后，就会把生成的日志异步的传送到standby数据库上应用，
@@ -82,11 +89,13 @@
 
 \item Trigger-Based Master-Standby Replication
 
-这种热备方式设定主从服务器，所有的修改查询发向master服务器，数据改变后以异步的方式将改变的数据发向standby服务器让其更新同步，
-而在均衡负载方面，standby服务器可以分担一些数据库的查询操作请求。
+这种热备方式设定主从服务器，让所有的修改查询发向master服务器，
+数据改变后以异步的方式将改变的数据发向standby服务器让其更新同步，
+而在均衡负载方面，standby服务器可以分担一些数据库的查询操作请求来减轻master服务器压力。
 
-Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备份粒度能细到每个表，
-由于是采用异步的复制方式，在master服务器crash时可能造成数据丢失。
+Slony-I是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，
+备份粒度能细到每个表，由于是采用异步的复制方式，
+在master服务器crash时，做failover可能造成数据丢失。
 \begin{figure}[hbtp]
 \caption{Trigger-Based Master-Standby Replication}
 \begin{center}
@@ -96,8 +105,9 @@ Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备
 
 \item Statement-Based Replication Middleware
 
-基于中间件这种方式，程序将会拦截每一个SQL请求操作，如果是查询读操作就将它发送到其中任意一个服务器，
-如果是修改写操作，则将它发送到所有的服务器让每个服务器各自执行SQL修改写入操作。
+基于中间件这种复制方式，程序将会拦截每一个SQL请求操作，
+如果是查询读操作则将它发送到其中任意一个服务器，如果是修改写操作，
+则将它发送到所有的服务器让每个服务器各自执行SQL修改写入操作来达到数据同步目的。
 
 \begin{figure}[hbtp]
 \caption{Statement-Based Replication Middleware}
@@ -108,8 +118,9 @@ Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备
 
 \item Asynchronous Multimaster Replication
 
-多主机异步复制，这种方式下多个主机独自工作，独自接受SQL查询修改，当某一主机数据改变后，
-主机间以异步的方式来互相同步数据，如果多个主机修改数据就可能造成数据冲突，
+多主机异步复制，在这种方式下多个master主机独自工作，可以独自接受SQL查询修改，
+当某一主机数据改变后，主机间以异步的方式来互相同步数据，
+如果多个主机同时修改数据就可能造成数据冲突，
 这就需要用户手动解决或制定特定的规则来回避冲突问题。
 
 \begin{figure}[hbtp]
@@ -123,7 +134,7 @@ Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备
 
 跟前一种方案差不多，不过是采用同步的方式来同步数据，
 这种方式下，如果写操作过多，程序就会频繁加锁，从而导致性能降低。
-对于这种方案可以通过设置一写多读或者用共享硬盘减少通信来达到提高性能的目的。
+对于这种方案可以通过设置一写多读或者用共享硬盘减少主机间通信来达到提高性能的目的。
 
 \begin{figure}[hbtp]
 \caption{Synchronous Multimaster Replication}
@@ -134,7 +145,8 @@ Slony-I就是采用这种复制方式来实现热备的的一种实现，它能支持多个standby服务器，备
 
 \end{enumerate}
 
-几种复制对比:
+\pagebreak[4]
+\noindent\textbf{以下是几种Replication对比:}
 \begin{figure}[H]
 \centering
 \caption{High Availability, Load Balancing, and Replication Feature Matrix}
