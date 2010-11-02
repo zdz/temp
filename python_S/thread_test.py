@@ -1,7 +1,7 @@
 import threading
 import time
 
-class MyThread(threading.Thread):
+class SQLTestThread(threading.Thread):
     def __init__(self, threadname):
         threading.Thread.__init__(self, name = threadname)
     def run(self):
@@ -10,10 +10,8 @@ class MyThread(threading.Thread):
             time.sleep(1)
 
 if __name__ == '__main__':
-    t1 = MyThread('MyThread')
-    print t1.getName(), t1.isDaemon() # False
-    #t1.setDaemon(True)
-    #print t1.getName(), t1.isDaemon() # True
+    t1 = SQLTestThread('MyThread')
+    print t1.getName(), t1.isDaemon()
 
     t1.start()
     print 'Main thread exit'
