@@ -1,7 +1,13 @@
 from sql_common import *
 import MySQLdb  
+import logging
 
-class MySQL_P():
+mysql_logger = g_SQL_Logger.getLogger('sqltest.mysql')
+fh = logging.FileHandler('mysql_test.log')
+fh.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s'))
+mysql_logger.addHandler(fh)
+
+class MySQL_P:
     def __init__(self):
         self._conn = MySQLdb.connect(host=SQL_SERVER_HOST, 
                                      user=SQL_USERNAME, 
@@ -11,17 +17,45 @@ class MySQL_P():
     def __del__ (self):
         self._conn.close()
         
-    def create_e(self,i = InnoDB_I):
+    def create_e(self):
         cursor = self._conn.cursor()  
-        cursor.execute(MYSQL_CREATE_CMD[i]) 
+        cursor.execute(MYSQL_CREATE_CMD) 
         self._conn.commit()
         cursor.close()
         
-    def select_e ():
+    def select_e (self):
         cursor = self._conn.cursor()
         cursor.execute(SELECT_CMD)
         cursor.close()
         
+    def insert_fact_e (self):
+        mysql_logger.info(">>>insert_fact_e<<<")
+        cursor = self._conn.cursor()
+
+        check_p = (0,10000,100000,1000000,10000000)
+        index_i = 0
+        t_s = time.time()
+        for i in range(1,len(check_p)):
+            t = check_p[i] - check_p[i-1]
+            #cal time here
+            mysql_logger.info("==>>@%.3fs taken for {%s}" % (time.time() - t_s,index_i))
+            for  ii in xrange(t):
+                index_i += 1
+                #action here
+                cursor.execute(INSERT_CMD % (
+                                        4000000207231448050 + index_i,
+                                        3000000000000000050 + index_i,
+                                        40000004 + index_i,
+                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
+                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
+                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
+                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
+                                        ))
+                self._conn.commit()
+                pass            
+        mysql_logger.info("==>>@%.3fs taken for {%s}" % (time.time() - t_s,index_i))
+        
+    @ExeTime
     def insert_e(self,n = 1000000):
         cursor = self._conn.cursor()  
         for i in range(n):
@@ -34,7 +68,7 @@ class MySQL_P():
                                         time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
                                         time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
                                         ))
-        self._conn.commit()
+            self._conn.commit()
         cursor.close()
             
     def update_e(self):
@@ -118,7 +152,11 @@ class MySQLTester:
 
 
 if __name__ == "__main__":
+    mysql_logger.info("begin")
     mysql_p = MySQL_P()
-    #mysql_p.create_e(InnoDB_I2)
-    mysql_p.insert_e(2)
-    #mysql_p.update_e()
+    #mysql_p.create_e()
+    #mysql_p.insert_fact_e()
+    #mysql_p.insert_e(100)
+    mysql_p.update_e()
+    mysql_p.update_random_e()
+    mysql_logger.info("end")

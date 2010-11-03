@@ -1,4 +1,5 @@
 import time
+import logging
 
 #SQL_SERVER_HOST='10.10.10.128'
 SQL_SERVER_HOST='localhost'
@@ -19,66 +20,86 @@ def ExeTime(func):
         return ret
     return _func
 
+class SQL_Logger:
+    def __init__ (self):        
+        # set up logging to file - see previous section for more details
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                            datefmt='%m-%d %H:%M',
+                            filename='myapp.log',
+                            filemode='w')
+        # define a Handler which writes INFO messages or higher to the sys.stderr
+        console = logging.StreamHandler()
+        console.setLevel(logging.INFO)
+        # set a format which is simpler for console use
+        formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+        # tell the handler to use this format
+        console.setFormatter(formatter)
+        # add the handler to the root logger
+        logging.getLogger('').addHandler(console)
+
+    def getLogger (self,s):
+        return logging.getLogger(s)
+        
+g_SQL_Logger = SQL_Logger()
 
 PG_CREATE_CMD="""
-CREATE TABLE  test_t (
-  id serial,
-  upid integer NOT NULL DEFAULT '0',
-  doid integer  NOT NULL DEFAULT '0',
-  uid integer  NOT NULL DEFAULT '0',
-  username char(15) NOT NULL DEFAULT '',
-  dateline integer NOT NULL DEFAULT '0',
-  message text NOT NULL,
-  ip char(20) NOT NULL DEFAULT '',
-  grade integer NOT NULL DEFAULT '0',
-  PRIMARY KEY (id,doid)
-)  ;"""
+CREATE TABLE tbl_fax_records (
+  faxid varchar(50) NOT NULL DEFAULT '',
+  taskid varchar(50) DEFAULT NULL,
+  fax_serv_addr varchar(30) DEFAULT NULL,
+  userid varchar(20) DEFAULT NULL,
+  receiver_number varchar(30) DEFAULT NULL,
+  status integer NOT NULL,
+  fee decimal(10,3) DEFAULT NULL,
+  time_long smallint DEFAULT NULL,
+  npages smallint DEFAULT NULL,
+  error int DEFAULT NULL,
+  error_descr varchar(250) DEFAULT NULL,
+  read_count smallint DEFAULT NULL,
+  fax_start_date timestamp DEFAULT NULL,
+  fax_end_date timestamp DEFAULT NULL,
+  create_date timestamp DEFAULT NULL,
+  jobid varchar(15) DEFAULT NULL,
+  actual_fee decimal(10,3) DEFAULT NULL,
+  sip_descr varchar(200) DEFAULT NULL,
+  submit_date timestamp DEFAULT NULL,
+  kill_date timestamp DEFAULT NULL,
+  ext_delay integer NOT NULL DEFAULT '3',
+  priority integer NOT NULL DEFAULT '1',
+  fax_type integer NOT NULL,
+  ts_type integer NOT NULL DEFAULT '0',
+  origin_error int DEFAULT NULL,
+  retries integer NOT NULL DEFAULT '0',
+  max_retries integer NOT NULL DEFAULT '2',
+  fax_res integer DEFAULT NULL,
+  fax_dcs varchar(16) DEFAULT NULL,
+  send_rate integer DEFAULT NULL,
+  send_res integer DEFAULT NULL,
+  send_2D integer DEFAULT NULL,
+  send_ecm integer DEFAULT NULL,
+  retry_type integer NOT NULL DEFAULT '0',
+  recipient varchar(30) DEFAULT NULL,
+  recipient_company varchar(100) DEFAULT NULL,
+  area varchar(5) DEFAULT NULL,
+  number_type integer DEFAULT NULL,
+  hold_times int DEFAULT NULL,
+  PRIMARY KEY (faxid,taskid,priority,create_date,fax_serv_addr,fax_start_date,kill_date,status,error,fax_type,userid,receiver_number)
+) ;"""
 
 SELECT_CMD="""SELECT COUNT(*) FROM test_t;"""
 
-INSERT_CMD1="""INSERT INTO test_t (upid ,doid ,uid ,username ,dateline ,message ,ip ,grade)VALUES (
- '1', '2', '%s', 'myname', '1234567890', 'messagemessagemessagemessage', '127.0.0.1', '2'
-)"""
 
-UPDATE_CMD="""update test_t set ip = 'localhost';"""
+UPDATE_CMD="""update tbl_fax_records set fax_serv_addr = 'localhost';"""
 
-UPDATE_RANDOM_CMD="""update test_t set ip = 'localhost' 
-                     where uid in (select uid from test_t order by random() limit 1);"""
+UPDATE_RANDOM_CMD="""update tbl_fax_records set fax_serv_addr = 'localhost' where faxid in (select faxid from tbl_fax_records order by random() limit 1);"""
 
 DEL_CMD="""delete from test_t;"""
 
-DEL_RANDOM_CMD="""delete from test_t where uid in (select uid from test_t order by random() limit 1);"""
+DEL_RANDOM_CMD="""delete from tbl_fax_records where faxid in 
+                (select faxid from tbl_fax_records order by random() limit 1);"""
 
-MYSQL_CREATE_CMD=("""
-CREATE TABLE IF NOT EXISTS  test_t  (
-   id  int(10) unsigned NOT NULL AUTO_INCREMENT,
-   upid  int(10) unsigned NOT NULL DEFAULT '0',
-   doid  mediumint(8) unsigned NOT NULL DEFAULT '0',
-   uid  mediumint(8) unsigned NOT NULL DEFAULT '0',
-   username  char(15) NOT NULL DEFAULT '',
-   dateline  int(10) unsigned NOT NULL DEFAULT '0',
-   message  text NOT NULL,
-   ip  char(20) NOT NULL DEFAULT '',
-   grade  smallint(6) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY ( id ),
-  KEY  doid  ( doid )
-) ENGINE=MyISAM ;"""
-,"""
-CREATE TABLE IF NOT EXISTS  test_t  (
-   id  int(10) unsigned NOT NULL AUTO_INCREMENT,
-   upid  int(10) unsigned NOT NULL DEFAULT '0',
-   doid  mediumint(8) unsigned NOT NULL DEFAULT '0',
-   uid  mediumint(8) unsigned NOT NULL DEFAULT '0',
-   username  char(15) NOT NULL DEFAULT '',
-   dateline  int(10) unsigned NOT NULL DEFAULT '0',
-   message  text NOT NULL,
-   ip  char(20) NOT NULL DEFAULT '',
-   grade  smallint(6) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY ( id ),
-  KEY  doid  ( doid )
-) ENGINE=InnoDB ;"""
-,
-"""
+MYSQL_CREATE_CMD="""
 CREATE TABLE IF NOT EXISTS `tbl_fax_records` (
   `faxid` varchar(50) NOT NULL DEFAULT '',
   `taskid` varchar(50) DEFAULT NULL,
@@ -131,9 +152,7 @@ CREATE TABLE IF NOT EXISTS `tbl_fax_records` (
   KEY `idx_fax_type` (`fax_type`),
   KEY `idx_user` (`userid`),
   KEY `idx_number` (`receiver_number`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;""")
-
-(MyISAM_I,InnoDB_I,InnoDB_I2)=range(len(MYSQL_CREATE_CMD))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
 
 """INSERT INTO tbl_fax_records (
 faxid , taskid , fax_serv_addr , userid , receiver_number , status , fee , time_long , 
@@ -145,7 +164,7 @@ npages , error , error_descr , read_count , fax_start_date , fax_end_date
 VALUES
 ('8000000207231448050', 
 '800000020723144805', 
-NULL, 
+'', 
 '80000002', 
 '079733445566', 
 3, 0.000, 0, 1, 13, NULL, 0, 
@@ -153,8 +172,9 @@ NULL,
 '2010-7-23 14:48:41', NULL, 0.000, NULL, 
 '2010-7-23 14:47:00', 
 '2010-7-24 14:47:00', 3, 105, 1, 0, NULL, 0, 3, 0, 
-NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, 
-'0797', 0,0);
+ NULL, NULL, 
+0, 0, 0, 0, 0,
+'dfd', '0797', 0,0);
 
 %
 
@@ -176,7 +196,7 @@ retries , max_retries , fax_res , fax_dcs , send_rate ,
 send_res , send_2D , send_ecm , retry_type , recipient , 
 recipient_company , area , number_type , hold_times) VALUES(
 
-'%s', '%s', NULL, '%s', '079733445566',
+'%s', '%s', '', '%s', '079733445566',
 3, 0.000, 0, 1, 13, 
 NULL, 0, '%s', NULL, '%s', 
 NULL, 0.000, NULL, '%s','%s',
@@ -184,7 +204,6 @@ NULL, 0.000, NULL, '%s','%s',
 0, 3, 0, NULL, NULL, 
 0, 0, 0, 0, 0,
 'dfd', '0797', 0,0);"""
-
 
 bklkj="""
 %
@@ -198,3 +217,29 @@ time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
 time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
 time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
 )"""
+
+###mysql
+MYSQL_RANDOM_SEL_CMD="""select * from tbl_fax_records order by rand() limit 20;"""
+
+CREATE_INDEX_CMD="""create index index_ids on tbl_fax_records(faxid,taskid);"""
+DELETE_INDEX_CMD="""drop index index_ids on tbl_fax_records;"""
+
+
+ALTER_T_ADD_COLUMN_CMD="""alter table tbl_fax_records add x  smallint(4);"""
+ALTER_T_CHANGE_COLUMN_CMD="""alter table tbl_fax_records change x y integer;"""
+ALTER_T_DEL_COLUMN_CMD="""alter table tbl_fax_records drop y;"""
+
+ALTER_CHANGE_TABLE_NAME_CMD="""alter table tbl_fax_records rename to tbl_fax_records1;"""
+
+###pgsql
+PGSQL_RANDOM_SEL_CMD="""select * from tbl_fax_records order by random() limit 20;"""
+
+CREATE_INDEX_CMD="""create index index_ids on tbl_fax_records(faxid,taskid);"""
+PGSQL_DELETE_INDEX_CMD="""drop index index_ids;"""
+
+PGSQL_ALTER_T_ADD_COLUMN_CMD="""alter table tbl_fax_records add column x smallint;"""
+PGSQL_ALTER_T_CHANGE_COLUMN_CMD="""alter table tbl_fax_records rename column x TO y;
+                                   alter table tbl_fax_records alter column y TYPE smallint;"""
+PGSQL_ALTER_T_DEL_COLUMN_CMD="""alter table tbl_fax_records drop column x RESTRICT;"""
+
+PGSQL_ALTER_CHANGE_TABLE_NAME_CMD="""alter table tbl_fax_records rename to tbl_fax_records1;"""
