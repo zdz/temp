@@ -1,0 +1,94 @@
+\documentclass[a4paper]{article}
+\usepackage{CJK}
+\usepackage{geometry}
+\usepackage{upgreek}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{fancybox}
+\usepackage{float}
+\usepackage{slashbox}
+\usepackage{multirow}
+\pagenumbering{Roman}
+
+\begin{document}
+\begin{CJK}{GBK}{hei}
+\author{Joe.zhou}
+\title{SQL Test}
+\maketitle
+
+\section{性能测试}
+
+\begin{table}[H]
+\begin{center}
+\caption{性能测试}
+\begin{tabular}{|p{6cm}|p{3cm}|p{3cm}|}\hline
+\backslashbox{\kern+6em 操作}{\kern+6em 用时} & \hfil MySQL & \hfil PostgreSQL \\ \hline
+
+单线程插入20000000条记录 & & \\ \hline
+随机查询 & & \\ \hline
+随机修改 & & \\ \hline
+随机删除 & & \\ \hline
+多字段查询 & & \\ \hline
+带索引随机查询 & & \\ \hline
+带索引多段查询 & & \\ \hline
+100个线程同时插入200000条记录 & & \\ \hline
+
+\end{tabular}
+\end{center}
+\end{table}
+
+
+\section{同步测试}
+\subsection{DML操作同步}
+
+\begin{table}[H]
+\begin{center}
+\caption{DML操作同步-带索引表}
+\begin{tabular}{|c|c|c|}\hline
+\backslashbox{操作}{同步} & MySQL & PostgreSQL \\ \hline
+
+增加数据 & ${\surd}$ & ${\texttimes}$ \\ \hline
+修改数据 & ${\surd}$ & ${\texttimes}$ \\ \hline
+删除数据 & ${\texttimes}$ & ${\surd}$ \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\caption{DML操作同步-无索引表}
+\begin{tabular}{|c|c|c|}\hline
+\backslashbox{操作}{同步} & MySQL & PostgreSQL \\ \hline
+
+增加数据 & ${\surd}$ & ${\texttimes}$ \\ \hline
+修改数据 & ${\surd}$ & ${\texttimes}$ \\ \hline
+删除数据 & ${\texttimes}$ & ${\surd}$ \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\subsection{DDL操作同步}
+
+\begin{table}[H]
+\begin{center}
+\caption{DDL操作同步}
+\begin{tabular}{|c|c|c|}\hline
+\backslashbox{操作}{同步} & MySQL & PostgreSQL \\ \hline
+
+增加表 & ${\surd}$ & ${\texttimes}$ \\ \hline
+删除表 & ${\surd}$ & ${\texttimes}$ \\ \hline
+修改表名 & ${\texttimes}$ & ${\surd}$ \\ \hline
+修改表字段 & ${\surd}$ & ${\texttimes}$ \\ \hline
+增加表索引 & ${\surd}$ & ${\texttimes}$ \\ \hline
+删除表索引 & ${\texttimes}$ & ${\surd}$ \\ \hline
+修改表索引 & ${\surd}$ & ${\texttimes}$ \\ \hline
+
+\end{tabular}
+\end{center}
+\end{table}
+
+\end{CJK}
+\end{document} 
