@@ -1,11 +1,12 @@
 import time
 import logging
 
-#SQL_SERVER_HOST='10.10.10.128'
+#SQL_SERVER_HOST='10.10.10.132'
 SQL_SERVER_HOST='localhost'
 PG_SQL_USERNAME='postgres'
+PG_SQL_PASSWORD='teddy'
 SQL_USERNAME='root'
-SQL_PASSWORD='123456'
+SQL_PASSWORD='111111'
 SQL_DB='test'
 
 def ExeTime(func):
@@ -26,8 +27,8 @@ class SQL_Logger:
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                             datefmt='%m-%d %H:%M',
-                            filename='myapp.log',
-                            filemode='w')
+                            filename='sql_test.log',
+                            filemode='a')
         # define a Handler which writes INFO messages or higher to the sys.stderr
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
@@ -87,18 +88,6 @@ CREATE TABLE tbl_fax_records (
   PRIMARY KEY (faxid,taskid,priority,create_date,fax_serv_addr,fax_start_date,kill_date,status,error,fax_type,userid,receiver_number)
 ) ;"""
 
-SELECT_CMD="""SELECT COUNT(*) FROM test_t;"""
-
-
-UPDATE_CMD="""update tbl_fax_records set fax_serv_addr = 'localhost';"""
-
-UPDATE_RANDOM_CMD="""update tbl_fax_records set fax_serv_addr = 'localhost' where faxid in (select faxid from tbl_fax_records order by random() limit 1);"""
-
-DEL_CMD="""delete from test_t;"""
-
-DEL_RANDOM_CMD="""delete from tbl_fax_records where faxid in 
-                (select faxid from tbl_fax_records order by random() limit 1);"""
-
 MYSQL_CREATE_CMD="""
 CREATE TABLE IF NOT EXISTS `tbl_fax_records` (
   `faxid` varchar(50) NOT NULL DEFAULT '',
@@ -154,28 +143,11 @@ CREATE TABLE IF NOT EXISTS `tbl_fax_records` (
   KEY `idx_number` (`receiver_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
 
-"""INSERT INTO tbl_fax_records (
-faxid , taskid , fax_serv_addr , userid , receiver_number , status , fee , time_long , 
-npages , error , error_descr , read_count , fax_start_date , fax_end_date
- , create_date , jobid , actual_fee , sip_descr , submit_date , kill_date , 
- ext_delay , priority , fax_type , ts_type , origin_error , retries , max_retries , 
- fax_res , fax_dcs , send_rate , send_res , send_2D , send_ecm , retry_type , 
- recipient , recipient_company , area , number_type , hold_times)
-VALUES
-('8000000207231448050', 
-'800000020723144805', 
-'', 
-'80000002', 
-'079733445566', 
-3, 0.000, 0, 1, 13, NULL, 0, 
-'2010-7-23 14:47:00', NULL, 
-'2010-7-23 14:48:41', NULL, 0.000, NULL, 
-'2010-7-23 14:47:00', 
-'2010-7-24 14:47:00', 3, 105, 1, 0, NULL, 0, 3, 0, 
- NULL, NULL, 
-0, 0, 0, 0, 0,
-'dfd', '0797', 0,0);
+"""
 
+INSERT INTO tbl_fax_records (faxid , taskid , fax_serv_addr , userid , receiver_number , status , fee , time_long , npages , error , error_descr , read_count , fax_start_date , fax_end_date , create_date , jobid , actual_fee , sip_descr , submit_date , kill_date ,  ext_delay , priority , fax_type , ts_type , origin_error , retries , max_retries , fax_res , fax_dcs , send_rate , send_res , send_2D , send_ecm , retry_type ,  recipient , recipient_company , area , number_type , hold_times)VALUES('8000000207231448050', '800000020723144805', '', '80000002', '079733445566', 3, 0.000, 0, 1, 13, NULL, 0, '2010-7-23 14:47:00', NULL, '2010-7-23 14:48:41', NULL, 0.000, NULL, '2010-7-23 14:47:00', '2010-7-24 14:47:00', 3, 105, 1, 0, NULL, 0, 3, 0,  NULL, NULL, 0, 0, 0, 0, 0,'dfd', '0797', 0,0);
+delete from tbl_fax_records where faxid = '8000000207231448050';
+update tbl_fax_records set fax_serv_addr = 'xx' where faxid = '8000000207231448050';
 %
 
 (
@@ -185,6 +157,7 @@ VALUES
 time.strftime('%Y-%m-d %H:%M:%S',time.localtime()),
 )
 """
+
 
 INSERT_CMD = """INSERT INTO tbl_fax_records (
 faxid , taskid , fax_serv_addr , userid , receiver_number , 
@@ -218,6 +191,18 @@ time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
 time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
 )"""
 
+SELECT_CMD="""SELECT COUNT(*) FROM test_t;"""
+
+
+UPDATE_CMD="""update tbl_fax_records set fax_serv_addr = 'localhost';"""
+
+UPDATE_RANDOM_CMD="""update tbl_fax_records set fax_serv_addr = 'localhost' where faxid in (select faxid from tbl_fax_records order by random() limit 1);"""
+
+DEL_CMD="""delete from test_t;"""
+
+DEL_RANDOM_CMD="""delete from tbl_fax_records where faxid in 
+                (select faxid from tbl_fax_records order by random() limit 1);"""
+
 ###mysql
 MYSQL_RANDOM_SEL_CMD="""select * from tbl_fax_records order by rand() limit 20;"""
 
@@ -243,3 +228,46 @@ PGSQL_ALTER_T_CHANGE_COLUMN_CMD="""alter table tbl_fax_records rename column x T
 PGSQL_ALTER_T_DEL_COLUMN_CMD="""alter table tbl_fax_records drop column x RESTRICT;"""
 
 PGSQL_ALTER_CHANGE_TABLE_NAME_CMD="""alter table tbl_fax_records rename to tbl_fax_records1;"""
+
+
+
+"""
+
+mysql> select count(*) from tbl_fax_records;
+
+mysql> select * from tbl_fax_records where faxid < '4000000207231448051' limit 3;
+
+
+select * from tbl_fax_records where status = 3 and receiver_number = '079733445566' and faxid like '40000002072314480%';
+
+mysql> select * from tbl_fax_records where faxid < '4000000207231448051';       Empty set (0.00 sec)
+
+mysql> select * from tbl_fax_records where faxid like '40000002072314480%';
++---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
+| faxid               | taskid              | fax_serv_addr | userid   | receiver_number | status | fee   | time_long | npages | error | error_descr | read_count | fax_start_date      | fax_end_date | create_date         | jobid | actual_fee | sip_descr | submit_date         | kill_date           | ext_delay | priority | fax_type | ts_type | origin_error | retries | max_retries | fax_res | fax_dcs | send_rate | send_res | send_2D | send_ecm | retry_type | recipient | recipient_company | area | number_type | hold_times |
++---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
+| 4000000207231448051 | 3000000000000000051 | NULL          | 40000005 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
++---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
+1 row in set (0.02 sec)
+
+mysql> select * from tbl_fax_records where faxid like '400000020723144805%';
++---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
+| faxid               | taskid              | fax_serv_addr | userid   | receiver_number | status | fee   | time_long | npages | error | error_descr | read_count | fax_start_date      | fax_end_date | create_date         | jobid | actual_fee | sip_descr | submit_date         | kill_date           | ext_delay | priority | fax_type | ts_type | origin_error | retries | max_retries | fax_res | fax_dcs | send_rate | send_res | send_2D | send_ecm | retry_type | recipient | recipient_company | area | number_type | hold_times |
++---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
+| 4000000207231448051 | 3000000000000000051 | NULL          | 40000005 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
+| 4000000207231448052 | 3000000000000000052 | NULL          | 40000006 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
+| 4000000207231448053 | 3000000000000000053 | NULL          | 40000007 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
+| 4000000207231448054 | 3000000000000000054 | NULL          | 40000008 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
+| 4000000207231448055 | 3000000000000000055 | NULL          | 40000009 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
+| 4000000207231448056 | 3000000000000000056 | NULL          | 40000010 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
+| 4000000207231448057 | 3000000000000000057 | NULL          | 40000011 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
+| 4000000207231448058 | 3000000000000000058 | NULL          | 40000012 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
+| 4000000207231448059 | 3000000000000000059 | NULL          | 40000013 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
++---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
+9 rows in set (0.00 sec)
+
+mysql> update tbl_fax_records set fax_serv_addr='localhost' where faxid like '400000020723144805%';
+Query OK, 9 rows affected (0.20 sec)
+Rows matched: 9  Changed: 9  Warnings: 0
+
+"""

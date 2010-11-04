@@ -8,12 +8,12 @@ fh = logging.FileHandler('postgresql_test.log')
 fh.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s'))
 pgsql_logger.addHandler(fh)
 
-class PGTester():
+class PGTester:
     def __init__(self):
         self._db = pg.connect(dbname = SQL_DB,
                               host = SQL_SERVER_HOST,
                               user = PG_SQL_USERNAME,
-                              passwd = SQL_PASSWORD)
+                              passwd = PG_SQL_PASSWORD)
 
     def __del__ (self):
         self._db.close()
@@ -74,8 +74,11 @@ class PGTester():
             self._db.query(DEL_RANDOM_CMD)
     
 if __name__ == "__main__":
+    pgsql_logger.info("begin")
     pgtest = PGTester()
     #pgtest.create_e()
-    #pgtest.insert_e(100)
-    pgtest.update_e()
+    pgtest.insert_fact_e()
+    #pgtest.insert_e(100)    
+    #pgtest.update_e()
+    pgsql_logger.info("end")
     
