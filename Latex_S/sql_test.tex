@@ -35,11 +35,37 @@
 带索引随机查询 & & \\ \hline
 带索引多段查询 & & \\ \hline
 100个线程同时插入200000条记录 & & \\ \hline
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[H]
+\begin{center}
+\caption{insert 操作}
+\begin{tabular}{|c|c|c|}\hline
+\backslashbox{数据量}{耗时(s)} & MySQL & PostgreSQL \\ \hline
+
+10000 & 24 & 16.9 \\ \hline
+100000 & 284 & 173 \\ \hline
+1000000 & 2637 & 1743 \\ \hline
+10000000 & 23005 & 17550 \\ \hline
 
 \end{tabular}
 \end{center}
 \end{table}
 
+\begin{table}[H]
+\begin{center}
+\caption{insert 操作}
+\begin{tabular}{|c|c|c|c|c|}\hline
+\backslashbox{耗时}{数据量} & 10000 & 100000 & 1000000 & 10000000 \\ \hline
+
+MySQL & 24 & 284 & 2637 & 23005 \\ \hline
+PostgreSQL & 16.9 & 173 & 1743 & 17550 \\ \hline
+
+\end{tabular}
+\end{center}
+\end{table}
 
 \section{同步测试}
 \subsection{DML操作同步}
