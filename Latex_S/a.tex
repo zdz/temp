@@ -3,6 +3,8 @@
 \documentclass{ctexart}
 
 \usepackage{CJK}
+\usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{geometry}
 \usepackage{upgreek}
 \usepackage{amsmath}
@@ -124,6 +126,22 @@ p.save('b.png')
 \end{verbatim}
 \makebox[\textwidth]{\hrulefill}
 
+\begin{tabular}{|c|c|c|}\hline 
+\toprule
+aaaaaaa                                             & xetn &ewrsssssss\\ \hline
+\multicolumn{2}{|l|}{\multirow{3}*{combined cell}}  &  xdeeee\\ \cline{3-3}
+\multicolumn{2}{|l|}{}                              & xeefese\\ \cline{3-3}
+\multicolumn{2}{|l|}{}                              & fdsfsdf\\ \hline
+fasdfdsf &fdsafasf &fsfsf\\ \hline
+\bottomrule
+\end{tabular}
+
+\begin{tabular}{|c|c|c|c|}\hline \toprule
+\multicolumn{2}{|c|}{aa} & b & b\\ \hline
+c&c & b & b \\ \hline
+a & a & b & b\\  \hline
+\bottomrule
+\end{tabular}
 
 \begin{table}[hbtp]
 \caption{This table is an example}
