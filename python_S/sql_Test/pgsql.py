@@ -35,50 +35,22 @@ class PGTester:
             for  ii in xrange(t):
                 index_i += 1
                 #action here
-                self._db.query(INSERT_CMD % (
-                                        4000000207231448050 + index_i,
-                                        3000000000000000050 + index_i,
-                                        40000004 + index_i,
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        ))
+                self._db.query(INSERT_CMD % INSERT_CMD_DATA(index_i))
 
         pgsql_logger.info("==>>@%.3fs taken for {%s}" % (time.time() - t_s,index_i))
         
     @ExeTime
     def insert_e(self,n = 1000000):
+        """ >>>PGTester.insert_e<<< """
         for i in range(n):
-            self._db.query(INSERT_CMD % (
-                                        4000000207231448050+i,
-                                        3000000000000000050+i,
-                                        40000004+i,
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        ))
+            self._db.query(INSERT_CMD % INSERT_CMD_DATA(i))
             
-    @ExeTime
-    def update_e(self):
-        self._db.query(UPDATE_CMD)
-        
-    @ExeTime
-    def del_e(self):
-        self._db.query(DEL_CMD)
-    
-    @ExeTime
-    def del_random(self):
-        for i in range(5000):
-            self._db.query(DEL_RANDOM_CMD)
     
 if __name__ == "__main__":
     pgsql_logger.info("begin")
     pgtest = PGTester()
     #pgtest.create_e()
-    pgtest.insert_fact_e()
-    #pgtest.insert_e(100)    
-    #pgtest.update_e()
+    #pgtest.insert_fact_e()
+    pgtest.insert_e(10000)    
     pgsql_logger.info("end")
     

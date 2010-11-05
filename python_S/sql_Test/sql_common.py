@@ -1,25 +1,13 @@
 import time
 import logging
 
-#SQL_SERVER_HOST='10.10.10.132'
-SQL_SERVER_HOST='localhost'
+SQL_SERVER_HOST='10.10.10.132'
+#SQL_SERVER_HOST='localhost'
 PG_SQL_USERNAME='postgres'
 PG_SQL_PASSWORD='teddy'
 SQL_USERNAME='root'
 SQL_PASSWORD='111111'
 SQL_DB='test'
-
-def ExeTime(func):
-    def _func(*args, **args2):
-        t0 = time.time()
-        print "@%s, {%s} start" % (time.strftime("%X", time.localtime()), func.__name__)
-        print "@%s running..." % (func.__name__)
-        ret = func(*args, **args2)
-        print "@%s, {%s} end" % (time.strftime("%X", time.localtime()), func.__name__)
-        print "==>> %s <<==" % (func.__doc__)
-        print "==>>@%.3fs taken for {%s}" % (time.time() - t0, func.__name__)
-        return ret
-    return _func
 
 class SQL_Logger:
     def __init__ (self):        
@@ -43,6 +31,25 @@ class SQL_Logger:
         return logging.getLogger(s)
         
 g_SQL_Logger = SQL_Logger()
+
+et_logger = g_SQL_Logger.getLogger('sqltest.extime')
+etfh = logging.FileHandler('sqltest_exet.log')
+etfh.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s'))
+et_logger.addHandler(etfh)
+
+def ExeTime(func):
+    def _func(*args, **args2):
+        global et_logger        
+        t0 = time.time()
+        et_logger.info("@%s, {%s} start" % (time.strftime("%X", time.localtime()), func.__name__))
+        et_logger.info("@%s running..." % (func.__name__))
+        ret = func(*args, **args2)
+        et_logger.info("@%s, {%s} end" % (time.strftime("%X", time.localtime()), func.__name__))
+        et_logger.info("==>> %s <<==" % (func.__doc__))
+        et_logger.info("==>>@%.3fs taken for {%s}" % (time.time() - t0, func.__name__))
+        return ret
+    return _func
+
 
 PG_CREATE_CMD="""
 CREATE TABLE tbl_fax_records (
@@ -89,7 +96,7 @@ CREATE TABLE tbl_fax_records (
 ) ;"""
 
 MYSQL_CREATE_CMD="""
-CREATE TABLE IF NOT EXISTS `tbl_fax_records` (
+CREATE TABLE IF NOT EXISTS `tbl_fax_records3` (
   `faxid` varchar(50) NOT NULL DEFAULT '',
   `taskid` varchar(50) DEFAULT NULL,
   `fax_serv_addr` varchar(30) DEFAULT NULL,
@@ -159,7 +166,7 @@ time.strftime('%Y-%m-d %H:%M:%S',time.localtime()),
 """
 
 
-INSERT_CMD = """INSERT INTO tbl_fax_records (
+INSERT_CMD = """INSERT INTO tbl (
 faxid , taskid , fax_serv_addr , userid , receiver_number , 
 status , fee , time_long , npages , error , 
 error_descr , read_count , fax_start_date , fax_end_date , create_date , 
@@ -168,7 +175,6 @@ ext_delay , priority , fax_type , ts_type , origin_error ,
 retries , max_retries , fax_res , fax_dcs , send_rate , 
 send_res , send_2D , send_ecm , retry_type , recipient , 
 recipient_company , area , number_type , hold_times) VALUES(
-
 '%s', '%s', '', '%s', '079733445566',
 3, 0.000, 0, 1, 13, 
 NULL, 0, '%s', NULL, '%s', 
@@ -178,18 +184,14 @@ NULL, 0.000, NULL, '%s','%s',
 0, 0, 0, 0, 0,
 'dfd', '0797', 0,0);"""
 
-bklkj="""
-%
-
-(
-4000000207231448050+i,
-3000000000000000050+i,
-40000004+i
-time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())
-)"""
+INSERT_CMD_DATA = lambda index_i:( 
+                    6000000207231448050 + index_i,
+                    6000000000000000050 + index_i,
+                    60000004 + index_i,
+                    time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
+                    time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
+                    time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
+                    time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),)
 
 SELECT_CMD="""SELECT COUNT(*) FROM test_t;"""
 

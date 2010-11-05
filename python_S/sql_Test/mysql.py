@@ -23,10 +23,6 @@ class MySQL_P:
         self._conn.commit()
         cursor.close()
         
-    def select_e (self):
-        cursor = self._conn.cursor()
-        cursor.execute(SELECT_CMD)
-        cursor.close()
         
     def insert_fact_e (self):
         mysql_logger.info(">>>insert_fact_e<<<")
@@ -42,15 +38,7 @@ class MySQL_P:
             for  ii in xrange(t):
                 index_i += 1
                 #action here
-                cursor.execute(INSERT_CMD % (
-                                        4000000207231448050 + index_i,
-                                        3000000000000000050 + index_i,
-                                        40000004 + index_i,
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        ))
+                cursor.execute(INSERT_CMD % INSERT_CMD_DATA(index_i))
                 self._conn.commit()
                 pass            
         mysql_logger.info("==>>@%.3fs taken for {%s}" % (time.time() - t_s,index_i))
@@ -59,42 +47,11 @@ class MySQL_P:
     def insert_e(self,n = 1000000):
         cursor = self._conn.cursor()  
         for i in range(n):
-            cursor.execute(INSERT_CMD % (
-                                        4000000207231448050+i,
-                                        3000000000000000050+i,
-                                        40000004+i,
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                                        ))
+            cursor.execute(INSERT_CMD % INSERT_CMD_DATA(i))
             self._conn.commit()
         cursor.close()
             
-    def update_e(self):
-        cursor = self._conn.cursor()  
-        cursor.execute(UPDATE_CMD)
-        self._conn.commit()
-        cursor.close()
-
-    def update_random_e(self):
-        cursor = self._conn.cursor()  
-        cursor.execute(UPDATE_RANDOM_CMD)
-        self._conn.commit()
-        cursor.close()
-        
-    def del_e(self):
-        cursor = self._conn.cursor()  
-        cursor.execute(PG_DEL_CMD)
-        self._conn.commit()
-        cursor.close()
-    
-    def del_random_e(self):
-        cursor = self._conn.cursor()  
-        for i in range(5000):            
-            cursor.execute(DEL_RANDOM_CMD)
-        self._conn.commit()
-        cursor.close()
+ 
 
 class MySQLTester:
     def __init__ (self):
@@ -153,9 +110,7 @@ class MySQLTester:
 if __name__ == "__main__":
     mysql_logger.info("begin")
     mysql_p = MySQL_P()
-    mysql_p.create_e()
-    mysql_p.insert_fact_e()
-    #mysql_p.insert_e(100)
-    #mysql_p.update_e()
-    #mysql_p.update_random_e()
+    #mysql_p.create_e()
+    #mysql_p.insert_fact_e()
+    mysql_p.insert_e(10000)
     mysql_logger.info("end")
