@@ -1,7 +1,7 @@
 from sql_common import *
 import MySQLdb  
 import logging
-
+import threading
 mysql_logger = g_SQL_Logger.getLogger('sqltest.mysql')
 fh = logging.FileHandler('mysql_test.log')
 fh.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s'))
@@ -17,11 +17,20 @@ class MySQL_P:
     def __del__ (self):
         self._conn.close()
         
-    def create_e(self):
+    def exe_e (self,sql_cmd):
         cursor = self._conn.cursor()  
-        cursor.execute(MYSQL_CREATE_CMD) 
+        cursor.execute(sql_cmd) 
         self._conn.commit()
         cursor.close()
+        
+    def create_e(self):
+        self.exe_e(MYSQL_CREATE_CMD)
+        
+    def select_e (self):
+        self.exe_e(SELECT_CMD)
+    
+    def update_e (self):
+        self.exe_e(UPDATE_CMD)
         
         
     def insert_fact_e (self):
@@ -44,10 +53,11 @@ class MySQL_P:
         mysql_logger.info("==>>@%.3fs taken for {%s}" % (time.time() - t_s,index_i))
         
     @ExeTime
-    def insert_e(self,n = 1000000):
+    def insert_e(self,n = 10000,offset_ = 0):
+        """MySQL_P.insert_e"""
         cursor = self._conn.cursor()  
         for i in range(n):
-            cursor.execute(INSERT_CMD % INSERT_CMD_DATA(i))
+            cursor.execute(INSERT_CMD % INSERT_CMD_DATA(i + offset_))
             self._conn.commit()
         cursor.close()
             
@@ -56,33 +66,29 @@ class MySQL_P:
 class MySQLTester:
     def __init__ (self):
         pass
-
-    def select_t ():
+        
+    def select_t (self):
         mysql_p = MySQL_P()
         mysql_p.select_e()
+
+    def update_t (self):
+        mysql_p = MySQL_P()
+        mysql_p.update_e()
         
-    def insert_t1 (self):
+    def insert_t (self,n = 10000, offset_ = 0):
         mysql_p = MySQL_P()
-        mysql_p.insert_e()
-
-    def insert_t2 (self):
-        mysql_p = MySQL_P()  
-        mysql_p.insert_e(100000)
-
-    def insert_t3 (self):
-        mysql_p = MySQL_P()
-        mysql_p.insert_e(10000)
+        mysql_p.insert_e(n,offset_)
 
     def update_random_t (self):
         mysql_p = MySQL_P()
         mysql_p.update_random_e()
 
     @ExeTime
-    def thread_t (self):
-        import threading
+    def thread_t (self):     
+        """MySQLTester.thread_t"""
         l = []
         for i in range(100) :
-            t = threading.Thread(target = self.insert_t3)
+            t = threading.Thread(target = self.insert_t,kwargs = {'offset_' :i*100000})
             t.start()
             l.append(t)
         for t in l :
@@ -90,13 +96,12 @@ class MySQLTester:
             
     @ExeTime
     def thread_mix_t (self):
-        import threading
         l = []
         for i in range(10) :
-            a = threading.Thread(target = self.insert_t3)
+            a = threading.Thread(target = self.insert_t,kwargs = {'offset_' :i*100000})
             a.start()
             l.append(a)
-            b = threading.Thread(target = self.update_random_t)
+            b = threading.Thread(target = self.update_t)
             b.start()
             l.append(b)
             c = threading.Thread(target = self.select_t)
@@ -109,8 +114,10 @@ class MySQLTester:
 
 if __name__ == "__main__":
     mysql_logger.info("begin")
-    mysql_p = MySQL_P()
+    #mysql_p = MySQL_P()
     #mysql_p.create_e()
     #mysql_p.insert_fact_e()
-    mysql_p.insert_e(10000)
+    #mysql_p.insert_e(1000)
+    mysql_t = MySQLTester()
+    mysql_t.thread_t()
     mysql_logger.info("end")

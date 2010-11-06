@@ -1,8 +1,8 @@
 import time
 import logging
 
-SQL_SERVER_HOST='10.10.10.132'
-#SQL_SERVER_HOST='localhost'
+#SQL_SERVER_HOST='10.10.10.132'
+SQL_SERVER_HOST='localhost'
 PG_SQL_USERNAME='postgres'
 PG_SQL_PASSWORD='teddy'
 SQL_USERNAME='root'
@@ -166,7 +166,7 @@ time.strftime('%Y-%m-d %H:%M:%S',time.localtime()),
 """
 
 
-INSERT_CMD = """INSERT INTO tbl (
+INSERT_CMD = """INSERT INTO tbl_fax_records3 (
 faxid , taskid , fax_serv_addr , userid , receiver_number , 
 status , fee , time_long , npages , error , 
 error_descr , read_count , fax_start_date , fax_end_date , create_date , 
@@ -185,18 +185,18 @@ NULL, 0.000, NULL, '%s','%s',
 'dfd', '0797', 0,0);"""
 
 INSERT_CMD_DATA = lambda index_i:( 
-                    6000000207231448050 + index_i,
-                    6000000000000000050 + index_i,
-                    60000004 + index_i,
+                    2100000207231448050 + index_i,
+                    2100000000000000050 + index_i,
+                    21000004 + index_i,
                     time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
                     time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
                     time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
                     time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),)
 
-SELECT_CMD="""SELECT COUNT(*) FROM test_t;"""
+SELECT_CMD="""SELECT COUNT(*) FROM tbl_fax_records3;"""
 
 
-UPDATE_CMD="""update tbl_fax_records set fax_serv_addr = 'localhost';"""
+UPDATE_CMD="""update tbl_fax_records3 set fax_serv_addr = 'localhost';"""
 
 UPDATE_RANDOM_CMD="""update tbl_fax_records set fax_serv_addr = 'localhost' where faxid in (select faxid from tbl_fax_records order by random() limit 1);"""
 
