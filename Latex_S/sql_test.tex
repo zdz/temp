@@ -50,9 +50,9 @@
   \item 数据版本
     \begin{description}
       \item[MySQL] : \\
-        MySQL server community 5.1.52
+        MySQL Server Community 5.1.52
       \item[PostgreSQL] : \\
-        Postgresql 9.0.1-1
+        PostgreSQL 9.0.1-1
     \end{description}
   \item 测试程序环境
     \begin{description}
@@ -62,7 +62,7 @@
         MySQL-python-1.2.3
       \item[PostgreSQL] : \\
         PyGreSQL-4.0
-    \end{description}    
+    \end{description}
 \end{itemize}
 
 \section{性能测试}
@@ -79,7 +79,7 @@
 \begin{tabularx}{7cm}{Xrr}\hline
 \toprule
 数据量 & MySQL & PostgreSQL \\ \hline \hline
-10000 & 24.524 & 16.99 \\ \hline
+10000 & 24.524 & 16.990 \\ \hline
 \rowcolor{mygray}
 100000 & 284.048 & 174.640 \\ \hline
 1000000 & 2637.916 & 1743.240 \\ \hline
@@ -103,7 +103,7 @@
 10000 & 24.437 & 18.404 \\ \hline
 100000 & 25.344 & 17.916 \\ \hline
 1000000 & 22.494 & 17.888 \\ \hline
-10000000 & 25.63 & 17.938 \\ \hline
+10000000 & 25.630 & 17.938 \\ \hline
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}
@@ -120,7 +120,7 @@
 \toprule
 数据量 & MySQL & PostgreSQL \\ \hline \hline
 10000 & 8.965 & 9.4045 \\ \hline
-100000 & 34.67 & 34.1230 \\ \hline
+100000 & 34.670 & 34.1230 \\ \hline
 1000000 & 305.594 & 397.5464 \\ \hline
 10000000 & 3636.625 & 3536.4815 \\ \hline
 \bottomrule
@@ -232,6 +232,8 @@
 \end{center}
 \end{table}
 
+两者在 DML和DDL同步测试中基本都能做到各种操作数据同步。
+
 \section{异常测试}
 
 \begin{itemize}
@@ -246,30 +248,55 @@
   \item PostgreSQL
 \end{itemize}
 
-\section{同步错误恢复}
+\section{灾难恢复，主从恢复}
 
 \begin{itemize}
   \item MySQL
-  
-  当同步出错，出现数据不一致时使用以下代码来跳过N个错误事件。
-  \begin{verbatim}
-    mysql> STOP SLAVE;
-    mysql> SET GLOBAL SQL_SLAVE_SKIP_COUNTER=N;
-    mysql> START SLAVE;
-  \end{verbatim}
-  当错误事件较多时，可在Master server运行
-  \begin{verbatim}
-    mysql> RESET MASTER;
-  \end{verbatim}
-  在Slave server运行
-  \begin{verbatim}
-    mysql> STOP SLAVE;
-    mysql> RESET SLAVE;
-    mysql> START SLAVE;
-  \end{verbatim}
-  来清除志同步位置标志，并重新生成master.info，但是这样以前没同步的事件将忽略，需手动同步。
+  \begin{itemize}
+      \item Master Server 服务器宕机时使用以下步骤来Failover
+      \begin{enumerate}
+      \item 关闭Master Server
+      \item 检查Slave Server状态，确定已经同步所有数据后
+      \begin{verbatim}
+      mysql> SHOW PROCESSLIST;
+          State: Has read all relay log; waiting for the slave I/O thread to update it
+      \end{verbatim}
+      \item 停止Slave Server 的slave 线程
+      \begin{verbatim}
+      mysql> STOP SLAVE;
+      \end{verbatim}
+      \item 清除Master Server服务器日志信息
+      \begin{verbatim}
+      mysql> REST MASTER;
+      \end{verbatim}
+      \item 将Slave Server设置为Master Server
+      \begin{verbatim}
+      mysql> REST MASTER;
+      \end{verbatim}    
+      \item 将原Master Server维护好后，设置为Slave Server,配置同步新的Master Server
+      \end{enumerate}
 
+      \item 当同步出错，出现数据不一致时使用以下代码来跳过N个错误事件。
+      \begin{verbatim}
+        mysql> STOP SLAVE;
+        mysql> SET GLOBAL SQL_SLAVE_SKIP_COUNTER=N;
+        mysql> START SLAVE;
+      \end{verbatim}
+      当错误事件较多时，可在Master server运行
+      \begin{verbatim}
+        mysql> RESET MASTER;
+      \end{verbatim}
+      在Slave server运行
+      \begin{verbatim}
+        mysql> STOP SLAVE;
+        mysql> RESET SLAVE;
+        mysql> START SLAVE;
+      \end{verbatim}
+      来清除志同步位置标志，并重新生成master.info，但是这样以前没同步的事件将忽略，需手动同步。
+  \end{itemize}
+  
   \item PostgreSQL
+  
 \end{itemize}
 
 \newpage
@@ -277,7 +304,7 @@
 \section{附录}
 \begin{itemize}
   \item 测试数据库表结构
-  
+
 \begin{verbatim}
 CREATE TABLE IF NOT EXISTS `tbl_fax_records` (
   `faxid` varchar(50) NOT NULL DEFAULT '',
@@ -401,7 +428,7 @@ NULL, 0.000, NULL, '%s','%s',
 3, 105, 1, 0, NULL,
 0, 3, 0, NULL, NULL,
 0, 0, 0, 0, 0,
-'dfd', '0797', 0,0);""" 
+'dfd', '0797', 0,0);"""
 %
 (2100000207231448050 + index_i,
 2100000000000000050 + index_i,
@@ -415,11 +442,11 @@ time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),)
 \item 多段查询SQL语句
 
 \begin{verbatim}
-select count(*) from tbl_fax_records 
-    where status = 3 and 
-        receiver_number = '079733445566' and 
+select count(*) from tbl_fax_records
+    where status = 3 and
+        receiver_number = '079733445566' and
         faxid like '40000002072314480%';
-        
+
 select faxid,userid,send_2D,retry_type from tbl_fax_records
     where status = 3 and
         receiver_number = '079733445566' and
