@@ -258,45 +258,51 @@
       \item 关闭Master Server
       \item 检查Slave Server状态，确定已经同步所有数据后
       \begin{verbatim}
-      mysql> SHOW PROCESSLIST;
-          State: Has read all relay log; waiting for the slave I/O thread to update it
+mysql> SHOW PROCESSLIST;
+  State: Has read all relay log;
+    waiting for the slave I/O thread to update it
       \end{verbatim}
-      \item 停止Slave Server 的slave 线程
+      \item 停止Slave Server 的slave 线程，并reset为Master Server
       \begin{verbatim}
-      mysql> STOP SLAVE;
+mysql> STOP SLAVE;
+mysql> REST MASTER;
       \end{verbatim}
-      \item 清除Master Server服务器日志信息
-      \begin{verbatim}
-      mysql> REST MASTER;
-      \end{verbatim}
-      \item 将Slave Server设置为Master Server
-      \begin{verbatim}
-      mysql> REST MASTER;
-      \end{verbatim}    
       \item 将原Master Server维护好后，设置为Slave Server,配置同步新的Master Server
+      \begin{verbatim}
+mysql> STOP SLAVE;
+mysql> CHANGE MASTER TO
+        MASTER_HOST='10.10.10.131',
+        MASTER_USER='backup',
+        MASTER_PASSWORD='123456';
+mysql> START SLAVE;
+      \end{verbatim}
+      \item 检查新slave server状态
+      \begin{verbatim}
+mysql> SHOW SLAVE STATUS\G;
+      \end{verbatim}
       \end{enumerate}
 
       \item 当同步出错，出现数据不一致时使用以下代码来跳过N个错误事件。
       \begin{verbatim}
-        mysql> STOP SLAVE;
-        mysql> SET GLOBAL SQL_SLAVE_SKIP_COUNTER=N;
-        mysql> START SLAVE;
+mysql> STOP SLAVE;
+mysql> SET GLOBAL SQL_SLAVE_SKIP_COUNTER=N;
+mysql> START SLAVE;
       \end{verbatim}
       当错误事件较多时，可在Master server运行
       \begin{verbatim}
-        mysql> RESET MASTER;
+mysql> RESET MASTER;
       \end{verbatim}
       在Slave server运行
       \begin{verbatim}
-        mysql> STOP SLAVE;
-        mysql> RESET SLAVE;
-        mysql> START SLAVE;
+mysql> STOP SLAVE;
+mysql> RESET SLAVE;
+mysql> START SLAVE;
       \end{verbatim}
       来清除志同步位置标志，并重新生成master.info，但是这样以前没同步的事件将忽略，需手动同步。
   \end{itemize}
-  
+
   \item PostgreSQL
-  
+
 \end{itemize}
 
 \newpage

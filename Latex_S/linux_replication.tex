@@ -1,0 +1,60 @@
+\documentclass[a4paper]{article}
+\usepackage{CJK}
+\usepackage{geometry}
+\usepackage{upgreek}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{fancybox}
+\usepackage{float}
+\usepackage{slashbox}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{threeparttable}
+\pagenumbering{Roman}
+
+\definecolor{mygray}{gray}{.9}
+
+\begin{document}
+\begin{CJK}{GBK}{hei}
+\author{Joe.zhou}
+\title{Linux 文件系统备份简述}
+\maketitle
+
+\section{linux的三种备份方式}
+
+\begin{enumerate}
+  \item 完全备份(普通备份Normal)：
+  
+  备份所有选择的文件和文件夹(不管是否被设为存档属性),备份后清除备份标志；
+  通常,在首次创建备份集时要执行一次正常备份。
+
+  \item 增量备份(Incremental)：
+  
+  只备份选择的，并且带有标志的文件和文件夹，它清除备份标志. 即只备份上次正常备份或增量备份以来创建或更改的文件。其需要最少的存储空间,
+  并节省备份时间.然而在恢复文件比较耗时和困难。
+
+  \item 差异备份(Differential)：
+  
+  只备份选择的，并且带有标志的文件和文件夹，它不清除备份标志. 即只备份上次正常备份或增量备份以来创建或更改的文件。
+  由于其不清除文件的存档属性,所以对一个文件执行两次差异备份,
+  则在每一次整个文件都要被备份。差异备份使用的存储介质比增量备份多,
+  但还原差异备份的数据则简单些
+
+\end{enumerate}
+
+\section{基于工具级别的备份}
+\subsection{tar}
+\subsection{dump\&restore}
+\subsection{cpio}
+\subsection{dd}
+
+\section{基于解决方案的备份}
+\section{DRBD}
+
+\end{CJK}
+\end{document} 
