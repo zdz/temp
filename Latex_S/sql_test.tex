@@ -14,7 +14,7 @@
 \usepackage{tabularx}
 \usepackage{booktabs}
 \usepackage{colortbl}
-\usepackage{verbatim} 
+\usepackage{verbatim}
 \usepackage{threeparttable}
 \pagenumbering{Roman}
 
@@ -59,12 +59,12 @@
       \item[MySQL] : MySQL-python-1.2.3
       \item[PostgreSQL] : PyGreSQL-4.0
     \end{description}
-  \item 同步方式
+  \item 同步备份模式
   \begin{description}
     \item[MySQL] : bin\_log
     \item[PostgreSQL] : Streaming Replication \& base-file
   \end{description}
-  \item 恢复方式
+  \item 恢复模式
   \begin{description}
     \item[MySQL] : bin\_log
     \item[PostgreSQL] : base-file
@@ -191,7 +191,8 @@
 \end{threeparttable}
 \end{table}
 
-从以上图表可以看出PostgreSQL在数据插入修改方面性能要优于MySQL.多段查询中MySQL的查询速度比PostgreSQL快,字段更新两者性能差不多。
+从以上图表可以看出PostgreSQL在数据插入修改方面性能要优于MySQL.在查询对比中，
+MySQL的查询速度明显比PostgreSQL快,字段更新两者性能差不多。
 
 
 \section{同步测试}
@@ -232,7 +233,7 @@ MySQL和PostgreSQL都使用内部的复制模式，其中MySQL使用bin\_log，PostgreSQL使用stre
 \begin{threeparttable}[b]
 \caption{DDL操作同步}
 %\begin{tabular}{c c c c}\hline
-\begin{tabularx}{9cm}{Xccc}\hline
+\begin{tabularx}{7.5cm}{Xccc}\hline
 \toprule
 \multicolumn{1}{l}{\multirow{2}*{操作}} &\multicolumn{2}{c}{MySQL} & PostgreSQL \\ \cline{2-4}
 \multicolumn{1}{l}{}                    & RBR & MBR & Streaming \\ \hline \hline
@@ -248,8 +249,8 @@ MySQL和PostgreSQL都使用内部的复制模式，其中MySQL使用bin\_log，PostgreSQL使用stre
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}
-\item [RBR] 基于行的复制(row-based replication, RBR)
-\item [MBR] 混合模式复制(mixed-based replication, MBR)
+\item [RBR] 基于行的复制(row-based replication)
+\item [MBR] 混合模式复制(mixed-based replication)
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -356,7 +357,7 @@ mysql> START SLAVE;
   # /etc/init.d/postgresql-9.0 start
   \end{verbatim}
   启动后，PostgreSQL会进入恢复模式，读取所需的WAL文件来恢复数据库。
-  恢复后，recovery.conf会被重命名为recovery.done。
+  恢复后，recovery.conf会被重命名为recovery.done。然后服务器会进入standby模式。
 \end{enumerate}
 \end{itemize}
 在数据恢复方面，PostgreSQL相对较MySQL简单。
@@ -632,4 +633,4 @@ EXECUTE PROCEDURE after_delete_tbl_fax_records3_func();
 \end{itemize}
 
 \end{CJK}
-\end{document} 
+\end{document}
