@@ -76,7 +76,7 @@ class PGTester:
     def thread_t (self):     
         """MySQLTester.thread_t"""
         l = []
-        for i in range(100) :
+        for i in range(50) :
             t = threading.Thread(target = self.insert_t,kwargs = {'offset_' :i*100000})
             t.start()
             l.append(t)
@@ -107,6 +107,8 @@ if __name__ == "__main__":
     pgsql_p = PGSQL_P()
     #pgsql_p.create_e()
     #pgsql_p.insert_fact_e()
-    pgsql_p.insert_e(10000)    
+    #pgsql_p.insert_e(10000)   
+    pgtester=PGTester()
+    pgtester.thread_t()
     pgsql_logger.info("end")
     

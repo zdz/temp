@@ -190,6 +190,17 @@ auto_increment_increment = N
 再设置一下auto\_increment\_offset为适当的初始值就可以了，
 那样，我们的MySQL可以同时有几十台主服务器，而不会出现自增长ID重复。
 
+\item 插入错误 mysql.proc is wrong
+\begin{verbatim}
+Error Code: 1558
+Column count of mysql.proc is wrong. Expected 20, found 16. 
+Created with MySQL 50045, now running 50152. 
+Please use mysql_upgrade to fix this error.
+\end{verbatim}
+运行以下语句修复
+\begin{verbatim}
+[root@localhost ~]# mysql_update -u root --password 111111
+\end{verbatim}
 \end{enumerate}
 
 \end{CJK}

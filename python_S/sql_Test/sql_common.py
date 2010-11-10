@@ -4,7 +4,7 @@ import logging
 #SQL_SERVER_HOST='10.10.10.132'
 SQL_SERVER_HOST='localhost'
 PG_SQL_USERNAME='postgres'
-PG_SQL_PASSWORD='teddy'
+PG_SQL_PASSWORD='postgres'
 SQL_USERNAME='root'
 SQL_PASSWORD='111111'
 SQL_DB='test'
@@ -185,9 +185,9 @@ NULL, 0.000, NULL, '%s','%s',
 'dfd', '0797', 0,0);"""
 
 INSERT_CMD_DATA = lambda index_i:( 
-                    2100000207231448050 + index_i,
-                    2100000000000000050 + index_i,
-                    21000004 + index_i,
+                    4100000207231448050 + index_i,
+                    4100000000000000050 + index_i,
+                    41000004 + index_i,
                     time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
                     time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
                     time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
@@ -218,6 +218,43 @@ ALTER_T_DEL_COLUMN_CMD="""alter table tbl_fax_records drop y;"""
 
 ALTER_CHANGE_TABLE_NAME_CMD="""alter table tbl_fax_records rename to tbl_fax_records1;"""
 
+
+#CREATE TRIGGER
+"""
+DROP TABLE IF EXISTS tab1;
+CREATE TABLE tab1(
+    tab1_id varchar(50)
+);
+
+DROP TRIGGER IF EXISTS t_afterinsert_on_tbl_fax_records3;
+DELIMITER |
+
+CREATE TRIGGER t_afterinsert_on_tbl_fax_records3
+AFTER INSERT ON tbl_fax_records3
+FOR EACH ROW
+BEGIN
+     insert into tab1(tab1_id) values(new.faxid);
+END
+|
+ 
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS t_afterdelete_on_tbl_fax_records3;
+DELIMITER |
+
+CREATE TRIGGER t_afterdelete_on_tbl_fax_records3
+AFTER DELETE ON tbl_fax_records3
+FOR EACH ROW
+BEGIN
+      delete from tab1 where tab1_id=old.faxid;
+END
+|
+ 
+DELIMITER ;
+"""
+
+
+
 ###pgsql
 PGSQL_RANDOM_SEL_CMD="""select * from tbl_fax_records order by random() limit 20;"""
 
@@ -230,6 +267,45 @@ PGSQL_ALTER_T_CHANGE_COLUMN_CMD="""alter table tbl_fax_records rename column x T
 PGSQL_ALTER_T_DEL_COLUMN_CMD="""alter table tbl_fax_records drop column x RESTRICT;"""
 
 PGSQL_ALTER_CHANGE_TABLE_NAME_CMD="""alter table tbl_fax_records rename to tbl_fax_records1;"""
+
+
+
+#trigger
+"""
+DROP TRIGGER IF EXISTS t_afterinsert_on_tbl_fax_records3 
+ON tbl_fax_records3 RESTRICT;
+
+CREATE OR REPLACE FUNCTION after_insert_tbl_fax_records3_func() 
+RETURNS trigger AS $BODY$
+BEGIN
+INSERT INTO tab1(tab1_id) VALUES(NEW.faxid);
+RETURN NULL;
+END;
+$BODY$
+LANGUAGE 'plpgsql';
+
+CREATE TRIGGER t_afterinsert_on_tbl_fax_records3
+AFTER INSERT ON tbl_fax_records3
+FOR EACH ROW
+EXECUTE PROCEDURE after_insert_tbl_fax_records3_func();
+
+DROP TRIGGER IF EXISTS t_afterdelete_on_tbl_fax_records3 
+ON tbl_fax_records3 RESTRICT;
+
+CREATE OR REPLACE FUNCTION after_delete_tbl_fax_records3_func() 
+RETURNS trigger AS $BODY$
+BEGIN
+DELETE FROM tab1 WHERE tab1_id=OLD.faxid;
+RETURN NULL;
+END;
+$BODY$
+LANGUAGE 'plpgsql';
+
+CREATE TRIGGER t_afterdelete_on_tbl_fax_records3
+AFTER DELETE ON tbl_fax_records3
+FOR EACH ROW
+EXECUTE PROCEDURE after_delete_tbl_fax_records3_func();
+"""
 
 
 

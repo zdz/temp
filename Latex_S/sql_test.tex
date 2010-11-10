@@ -14,6 +14,7 @@
 \usepackage{tabularx}
 \usepackage{booktabs}
 \usepackage{colortbl}
+\usepackage{verbatim} 
 \usepackage{threeparttable}
 \pagenumbering{Roman}
 
@@ -21,14 +22,14 @@
 
 \begin{document}
 \begin{CJK}{GBK}{hei}
-\author{Joe.zhou}
-\title{SQL 测试}
+\author{Joe}
+\title{SQL 测试报告}
 \maketitle
 %\tableofcontents
 
 \section{实验环境}
 \begin{itemize}
-  \item 实验服务器
+  \item 实验服务器配置
     \begin{itemize}
       \item Master Server :
         \begin{description}
@@ -47,22 +48,27 @@
           \item[Ip : ] 10.10.10.131
         \end{description}
     \end{itemize}
-  \item 数据版本
+  \item 数据库版本
     \begin{description}
-      \item[MySQL] : \\
-        MySQL Server Community 5.1.52
-      \item[PostgreSQL] : \\
-        PostgreSQL 9.0.1-1
+      \item[MySQL] : MySQL Server Community 5.1.52
+      \item[PostgreSQL] : PostgreSQL 9.0.1-1
     \end{description}
   \item 测试程序环境
     \begin{description}
-      \item[Python] : \\
-        Python 2.4.3
-      \item[MySQL] : \\
-        MySQL-python-1.2.3
-      \item[PostgreSQL] : \\
-        PyGreSQL-4.0
+      \item[Python] : Python 2.4.3
+      \item[MySQL] : MySQL-python-1.2.3
+      \item[PostgreSQL] : PyGreSQL-4.0
     \end{description}
+  \item 同步方式
+  \begin{description}
+    \item[MySQL] : bin\_log
+    \item[PostgreSQL] : Streaming Replication \& base-file
+  \end{description}
+  \item 恢复方式
+  \begin{description}
+    \item[MySQL] : bin\_log
+    \item[PostgreSQL] : base-file
+  \end{description}
 \end{itemize}
 
 \section{性能测试}
@@ -189,47 +195,63 @@
 
 
 \section{同步测试}
-
+MySQL和PostgreSQL都使用内部的复制模式，其中MySQL使用bin\_log，PostgreSQL使用streaming replication;
 \subsection{DML操作同步}
 
 \begin{table}[H]
-\begin{center}
+\centering
+\begin{threeparttable}[b]
 \caption{DML操作同步}
 \begin{tabular}{c c c c c}\hline \toprule
 \multicolumn{2}{c}{\multirow{2}*{操作}} &\multicolumn{2}{c}{MySQL} & PostgreSQL \\ \cline{3-5}
-\multicolumn{2}{c}{}                    & RBR & MBR & - \\ \hline \hline
-\multicolumn{1}{c}{\multirow{3}*{带索引表}} & 增加记录 & ${\surd}$ & ${\surd}$ & - \\ \cline{2-5}
-\multicolumn{1}{c}{}                        & 修改记录 & ${\surd}$ & ${\surd}$ & - \\ \cline{2-5}
-\multicolumn{1}{c}{}                        & 删除记录 & ${\surd}$ & ${\surd}$ & - \\ \hline \hline
+\multicolumn{2}{c}{}                    & RBR & MBR & Streaming \\ \hline \hline
+\multicolumn{1}{c}{\multirow{3}*{带索引表}} & 增加记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
+\multicolumn{1}{c}{}                        & 修改记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
+\multicolumn{1}{c}{}                        & 删除记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline \hline
 
-\multicolumn{1}{c}{\multirow{3}*{无索引表}} & 增加记录 & ${\surd}$ & ${\surd}$ & - \\ \cline{2-5}
-\multicolumn{1}{c}{}                        & 修改记录 & ${\surd}$ & ${\surd}$ & - \\ \cline{2-5}
-\multicolumn{1}{c}{}                        & 删除记录 & ${\surd}$ & ${\surd}$ & - \\ \hline
+\multicolumn{1}{c}{\multirow{3}*{无索引表}} & 增加记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
+\multicolumn{1}{c}{}                        & 修改记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
+\multicolumn{1}{c}{}                        & 删除记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline \hline
+
+\multicolumn{1}{c}{\multirow{3}*{带触发器的表}} & 增加记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
+\multicolumn{1}{c}{}                        & 修改记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
+\multicolumn{1}{c}{}                        & 删除记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
 \bottomrule
 \end{tabular}
-\end{center}
+\begin{tablenotes}
+\item [RBR] 基于行的复制(row-based replication, RBR)
+\item [MBR] 混合模式复制(mixed-based replication, MBR)
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 \subsection{DDL操作同步}
 
 \begin{table}[H]
-\begin{center}
+\centering
+\begin{threeparttable}[b]
 \caption{DDL操作同步}
 %\begin{tabular}{c c c c}\hline
-\begin{tabularx}{8cm}{Xccc}\hline
+\begin{tabularx}{9cm}{Xccc}\hline
 \toprule
 \multicolumn{1}{l}{\multirow{2}*{操作}} &\multicolumn{2}{c}{MySQL} & PostgreSQL \\ \cline{2-4}
-\multicolumn{1}{l}{}                    & RBR & MBR & - \\ \hline \hline
-增加表     & ${\surd}$ & ${\surd}$ & - \\ \hline
-删除表     & ${\surd}$ & ${\surd}$ & - \\ \hline
-修改表名   & ${\surd}$ & ${\surd}$ & - \\ \hline
-修改表字段 & ${\surd}$ & ${\surd}$ & - \\ \hline
-增加表索引 & ${\surd}$ & ${\surd}$ & - \\ \hline
-删除表索引 & ${\surd}$ & ${\surd}$ & - \\ \hline
-修改表索引 & ${\surd}$ & ${\surd}$ & - \\ \hline
+\multicolumn{1}{l}{}                    & RBR & MBR & Streaming \\ \hline \hline
+增加表     & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
+删除表     & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
+修改表名   & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
+修改表字段 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
+增加表索引 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
+删除表索引 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
+修改表索引 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
+增加触发器 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
+删除触发器 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
 \bottomrule
 \end{tabularx}
-\end{center}
+\begin{tablenotes}
+\item [RBR] 基于行的复制(row-based replication, RBR)
+\item [MBR] 混合模式复制(mixed-based replication, MBR)
+\end{tablenotes}
+\end{threeparttable}
 \end{table}
 
 两者在 DML和DDL同步测试中基本都能做到各种操作数据同步。
@@ -246,9 +268,16 @@
           过一段时间后同步恢复正常。
     \end{enumerate}
   \item PostgreSQL
+    \begin{enumerate}
+      \item 100个线程同时执行select,insert,update,delete四种操作，
+          每种循环100次，执行过程中kill掉Master server 的PostgreSQL服务器进程后，重新启动PostgreSQL服务进程，
+          过一段时间后同步恢复正常。
+      \item Master server 做插入操作时，kill掉Slave server 的PostgreSQL服务器进程后，重新启动PostgreSQL服务进程，
+          过一段时间后同步恢复正常。
+    \end{enumerate}
 \end{itemize}
 
-\section{灾难恢复，主从恢复}
+\section{灾难恢复}
 
 \begin{itemize}
   \item MySQL
@@ -303,7 +332,34 @@ mysql> START SLAVE;
 
   \item PostgreSQL
 
+恢复步骤
+\begin{enumerate}
+  \item 停止PostgreSQL服务
+  \begin{verbatim}
+  # /etc/init.d/postgresql-9.0 stop
+  \end{verbatim}
+  \item 删除发生的错误的数据目录并创建新的数据目录删除pg\_xlog目录
+  \begin{verbatim}
+  # rm -rf /opt/PostgreSQL/9.0/data
+  # tar -xf pgbackup.tar.bz2
+  # mv data /opt/PostgreSQL/9.0/data
+  \end{verbatim}
+  \item 创建recovery.conf文件
+  \begin{verbatim}
+    standby_mode = 'on'
+    primary_conninfo = 'host=10.10.10.132 port=5432 user=postgres password=postgres'
+    restore_command = 'cp /archive/mnt/%f %p'
+    trigger_file = '/archive/trigger_file'
+  \end{verbatim}
+  \item 启动PostgreSQL服务
+  \begin{verbatim}
+  # /etc/init.d/postgresql-9.0 start
+  \end{verbatim}
+  启动后，PostgreSQL会进入恢复模式，读取所需的WAL文件来恢复数据库。
+  恢复后，recovery.conf会被重命名为recovery.done。
+\end{enumerate}
 \end{itemize}
+在数据恢复方面，PostgreSQL相对较MySQL简单。
 
 \newpage
 \appendix
@@ -477,6 +533,83 @@ alter table tbl_fax_records add x  smallint(4);
 create index index_ids on tbl_fax_records(faxid,taskid);
 \end{verbatim}
 
+\item 创建和删除触发器
+
+\begin{itemize}
+  \item MySQL
+\begin{verbatim}
+DROP TABLE IF EXISTS tab1;
+CREATE TABLE tab1(
+    tab1_id varchar(50)
+);
+
+DROP TRIGGER IF EXISTS t_afterinsert_on_tbl_fax_records3;
+DELIMITER |
+
+CREATE TRIGGER t_afterinsert_on_tbl_fax_records3
+AFTER INSERT ON tbl_fax_records3
+FOR EACH ROW
+BEGIN
+     insert into tab1(tab1_id) values(new.faxid);
+END
+|
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS t_afterdelete_on_tbl_fax_records3;
+DELIMITER |
+
+CREATE TRIGGER t_afterdelete_on_tbl_fax_records3
+AFTER DELETE ON tbl_fax_records3
+FOR EACH ROW
+BEGIN
+      delete from tab1 where tab1_id=old.faxid;
+END
+|
+
+DELIMITER ;
+\end{verbatim}
+  \item PostgreSQL
+\begin{verbatim}
+DROP TRIGGER IF EXISTS t_afterinsert_on_tbl_fax_records3
+ON tbl_fax_records3 RESTRICT;
+
+CREATE OR REPLACE FUNCTION after_insert_tbl_fax_records3_func()
+RETURNS trigger AS $BODY$
+BEGIN
+INSERT INTO tab1(tab1_id) VALUES(NEW.faxid);
+RETURN NULL;
+END;
+$BODY$
+LANGUAGE 'plpgsql';
+
+CREATE TRIGGER t_afterinsert_on_tbl_fax_records3
+AFTER INSERT ON tbl_fax_records3
+FOR EACH ROW
+EXECUTE PROCEDURE after_insert_tbl_fax_records3_func();
+
+DROP TRIGGER IF EXISTS t_afterdelete_on_tbl_fax_records3
+ON tbl_fax_records3 RESTRICT;
+
+CREATE OR REPLACE FUNCTION after_delete_tbl_fax_records3_func()
+RETURNS trigger AS $BODY$
+BEGIN
+DELETE FROM tab1 WHERE tab1_id=OLD.faxid;
+RETURN NULL;
+END;
+$BODY$
+LANGUAGE 'plpgsql';
+
+CREATE TRIGGER t_afterdelete_on_tbl_fax_records3
+AFTER DELETE ON tbl_fax_records3
+FOR EACH ROW
+EXECUTE PROCEDURE after_delete_tbl_fax_records3_func();
+\end{verbatim}
+\end{itemize}
+
+
+
+\begin{comment}
 \begin{table}[H]
 \begin{center}
 \caption{性能测试}
@@ -494,6 +627,7 @@ create index index_ids on tbl_fax_records(faxid,taskid);
 \end{tabular}
 \end{center}
 \end{table}
+\end{comment}
 
 \end{itemize}
 
