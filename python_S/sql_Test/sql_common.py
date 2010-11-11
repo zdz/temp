@@ -1,5 +1,7 @@
 import time
+import random
 import logging
+import datetime
 
 #SQL_SERVER_HOST='10.10.10.132'
 SQL_SERVER_HOST='localhost'
@@ -96,7 +98,7 @@ CREATE TABLE tbl_fax_records (
 ) ;"""
 
 MYSQL_CREATE_CMD="""
-CREATE TABLE IF NOT EXISTS `tbl_fax_records3` (
+CREATE TABLE IF NOT EXISTS `tbl_fax_records0` (
   `faxid` varchar(50) NOT NULL DEFAULT '',
   `taskid` varchar(50) DEFAULT NULL,
   `fax_serv_addr` varchar(30) DEFAULT NULL,
@@ -166,7 +168,7 @@ time.strftime('%Y-%m-d %H:%M:%S',time.localtime()),
 """
 
 
-INSERT_CMD = """INSERT INTO tbl_fax_records3 (
+INSERT_CMD = """INSERT INTO tbl_fax_records0 (
 faxid , taskid , fax_serv_addr , userid , receiver_number , 
 status , fee , time_long , npages , error , 
 error_descr , read_count , fax_start_date , fax_end_date , create_date , 
@@ -176,10 +178,10 @@ retries , max_retries , fax_res , fax_dcs , send_rate ,
 send_res , send_2D , send_ecm , retry_type , recipient , 
 recipient_company , area , number_type , hold_times) VALUES(
 '%s', '%s', '', '%s', '079733445566',
-3, 0.000, 0, 1, 13, 
+3, 0.000, %s, %s, %s, 
 NULL, 0, '%s', NULL, '%s', 
 NULL, 0.000, NULL, '%s','%s',
-3, 105, 1, 0, NULL, 
+3, 105, %s, 0, NULL, 
 0, 3, 0, NULL, NULL, 
 0, 0, 0, 0, 0,
 'dfd', '0797', 0,0);"""
@@ -188,10 +190,14 @@ INSERT_CMD_DATA = lambda index_i:(
                     4100000207231448050 + index_i,
                     4100000000000000050 + index_i,
                     41000004 + index_i,
+                    random.randrange(20),
+                    random.randrange(6),
+                    random.randrange(13),
+                    (datetime.datetime.now() + datetime.timedelta(random.randrange(-40,40))).strftime('%Y-%m-%d %H:%M:%S'),
+                    (datetime.datetime.now() + datetime.timedelta(random.randrange(-40,40) - 40)).strftime('%Y-%m-%d %H:%M:%S'),
                     time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
                     time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                    time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-                    time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),)
+                    random.randrange(4)+1,)
 
 SELECT_CMD="""SELECT COUNT(*) FROM tbl_fax_records3;"""
 

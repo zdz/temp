@@ -106,9 +106,9 @@ if __name__ == "__main__":
     pgsql_logger.info("begin")
     pgsql_p = PGSQL_P()
     #pgsql_p.create_e()
-    #pgsql_p.insert_fact_e()
-    #pgsql_p.insert_e(10000)   
-    pgtester=PGTester()
-    pgtester.thread_t()
+    pgsql_p.insert_fact_e()
+    #pgsql_p.insert_e(1000)   
+    #pgtester=PGTester()
+    #pgtester.thread_t()
     pgsql_logger.info("end")
     

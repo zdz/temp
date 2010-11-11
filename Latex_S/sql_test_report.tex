@@ -15,14 +15,25 @@
 \usepackage{booktabs}
 \usepackage{colortbl}
 \usepackage{verbatim}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
 \usepackage{threeparttable}
 \pagenumbering{Roman}
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{}
+\cfoot{\thepage\ of \pageref{LastPage}}%当前页 of 总页数
+\rfoot{}
+\renewcommand{\headrulewidth}{0.0pt}%改为0pt即可去掉页眉下面的横线
+\renewcommand{\footrulewidth}{0.0pt}%改为0pt即可去掉页脚上面的横线
 
 \definecolor{mygray}{gray}{.9}
 
 \begin{document}
 \begin{CJK}{GBK}{hei}
-\author{Joe}
+\author{Joe.zhou}
 \title{SQL 测试报告}
 \maketitle
 %\tableofcontents
@@ -214,7 +225,7 @@ MySQL和PostgreSQL都使用内部的复制模式，其中MySQL使用bin\_log，PostgreSQL使用stre
 \multicolumn{1}{c}{}                        & 修改记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
 \multicolumn{1}{c}{}                        & 删除记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline \hline
 
-\multicolumn{1}{c}{\multirow{3}*{带触发器的表}} & 增加记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
+\multicolumn{1}{c}{\multirow{3}*{带触发器}} & 增加记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
 \multicolumn{1}{c}{}                        & 修改记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \cline{2-5}
 \multicolumn{1}{c}{}                        & 删除记录 & ${\surd}$ & ${\surd}$ & ${\surd}$ \\ \hline
 \bottomrule
@@ -336,28 +347,28 @@ mysql> START SLAVE;
 恢复步骤
 \begin{enumerate}
   \item 停止PostgreSQL服务
-  \begin{verbatim}
-  # /etc/init.d/postgresql-9.0 stop
-  \end{verbatim}
+\begin{verbatim}
+# /etc/init.d/postgresql-9.0 stop
+\end{verbatim}
   \item 删除发生的错误的数据目录并创建新的数据目录删除pg\_xlog目录
-  \begin{verbatim}
-  # rm -rf /opt/PostgreSQL/9.0/data
-  # tar -xf pgbackup.tar.bz2
-  # mv data /opt/PostgreSQL/9.0/data
-  \end{verbatim}
+\begin{verbatim}
+# rm -rf /opt/PostgreSQL/9.0/data
+# tar -xf pgbackup.tar.bz2
+# mv data /opt/PostgreSQL/9.0/data
+\end{verbatim}
   \item 创建recovery.conf文件
-  \begin{verbatim}
-    standby_mode = 'on'
-    primary_conninfo = 'host=10.10.10.132 port=5432 user=postgres password=postgres'
-    restore_command = 'cp /archive/mnt/%f %p'
-    trigger_file = '/archive/trigger_file'
-  \end{verbatim}
+\begin{verbatim}
+standby_mode = 'on'
+primary_conninfo = 'host=10.10.10.132 port=5432 user=postgres password=postgres'
+restore_command = 'cp /archive/mnt/%f %p'
+trigger_file = '/archive/trigger_file'
+\end{verbatim}
   \item 启动PostgreSQL服务
-  \begin{verbatim}
-  # /etc/init.d/postgresql-9.0 start
-  \end{verbatim}
-  启动后，PostgreSQL会进入恢复模式，读取所需的WAL文件来恢复数据库。
-  恢复后，recovery.conf会被重命名为recovery.done。然后服务器会进入standby模式。
+\begin{verbatim}
+# /etc/init.d/postgresql-9.0 start
+\end{verbatim}
+启动后，PostgreSQL会进入恢复模式，读取所需的WAL文件来恢复数据库。
+恢复后，recovery.conf会被重命名为recovery.done。然后服务器会进入standby模式。
 \end{enumerate}
 \end{itemize}
 在数据恢复方面，PostgreSQL相对较MySQL简单。
@@ -367,7 +378,8 @@ mysql> START SLAVE;
 \section{附录}
 \begin{itemize}
   \item 测试数据库表结构
-
+\begin{itemize}
+  \item MySQL
 \begin{verbatim}
 CREATE TABLE IF NOT EXISTS `tbl_fax_records` (
   `faxid` varchar(50) NOT NULL DEFAULT '',
@@ -423,7 +435,7 @@ CREATE TABLE IF NOT EXISTS `tbl_fax_records` (
   KEY `idx_number` (`receiver_number`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 \end{verbatim}
-
+  \item PostgreSQL
 \begin{verbatim}
 CREATE TABLE tbl_fax_records (
   faxid varchar(50) NOT NULL DEFAULT '',
@@ -470,7 +482,7 @@ CREATE TABLE tbl_fax_records (
   status,error,fax_type,userid,receiver_number)
 ) ;
 \end{verbatim}
-
+\end{itemize}
 
 \item 记录插入SQL语句(python)
 

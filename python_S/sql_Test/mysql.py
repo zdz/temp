@@ -40,7 +40,7 @@ class MySQL_P:
         check_p = (0,10000,100000,1000000,10000000)
         index_i = 0
         t_s = time.time()
-        for i in range(1,len(check_p) - 3):
+        for i in range(1,len(check_p)):
             t = check_p[i] - check_p[i-1]
             #cal time here
             mysql_logger.info("==>>@%.3fs taken for {%s}" % (time.time() - t_s,index_i))
@@ -114,10 +114,10 @@ class MySQLTester:
 
 if __name__ == "__main__":
     mysql_logger.info("begin")
-    #mysql_p = MySQL_P()
-    #mysql_p.create_e()
-    #mysql_p.insert_fact_e()
+    mysql_p = MySQL_P()
+    mysql_p.create_e()
+    mysql_p.insert_fact_e()
     #mysql_p.insert_e(1000)
-    mysql_t = MySQLTester()
-    mysql_t.thread_t()
+    #mysql_t = MySQLTester()
+    #mysql_t.thread_t()
     mysql_logger.info("end")
