@@ -34,7 +34,7 @@ class PGSQL_P:
         check_p = (0,10000,100000,1000000,10000000)
         index_i = 0
         t_s = time.time()
-        for i in range(1,len(check_p)):
+        for i in range(1,len(check_p)- SQL_TABLE_INDEX):
             t = check_p[i] - check_p[i-1]
             #cal time here
             pgsql_logger.info("==>>@%.3fs taken for {%s}" % (time.time() - t_s,index_i))

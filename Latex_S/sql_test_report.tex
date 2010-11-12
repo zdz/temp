@@ -17,6 +17,7 @@
 \usepackage{verbatim}
 \usepackage{lastpage}
 \usepackage{fancyhdr}
+\usepackage{fancyvrb}
 \usepackage{threeparttable}
 \pagenumbering{Roman}
 \pagestyle{fancy}
@@ -24,8 +25,8 @@
 \chead{}
 \rhead{}
 \lfoot{}
-\cfoot{\thepage\ of \pageref{LastPage}}%当前页 of 总页数
-\rfoot{}
+\cfoot{}%当前页 of 总页数
+\rfoot{\thepage\ of \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0.0pt}%改为0pt即可去掉页眉下面的横线
 \renewcommand{\footrulewidth}{0.0pt}%改为0pt即可去掉页脚上面的横线
 
@@ -151,7 +152,45 @@
 \begin{table}[H]
 \centering
 \begin{threeparttable}[b]
-\caption{多段查询统计【单位秒】}
+\caption{存储过程-I【单位秒】}
+\begin{tabularx}{7cm}{Xrr}\hline
+\toprule
+数据量 & MySQL & PostgreSQL \\ \hline \hline
+10000 & 0.21 & 0.016756 \\ \hline
+100000 & 1 & 0.118963 \\ \hline
+1000000 & 9 & 1.315248 \\ \hline
+10000000 & 95.03 & 79.018243 \\ \hline
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [备注] 统计型存储过程
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{存储过程-II【单位秒】}
+\begin{tabularx}{7cm}{Xrr}\hline
+\toprule
+数据量 & MySQL & PostgreSQL \\ \hline \hline
+10000 & 0.24 & 0.039367 \\ \hline
+100000 & 1.42 & 0.456614 \\ \hline
+1000000 & 9.67 & 9.87745 \\ \hline
+10000000 & 96.82 & 161.562963 \\ \hline
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [备注] 存储过程带查询插入删除统计操作
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{简单多段查询统计【单位秒】}
 \begin{tabularx}{7cm}{Xrr}\hline
 \toprule
 数据量 & MySQL & PostgreSQL \\ \hline \hline
@@ -161,6 +200,9 @@
 10000000 & 0 & 263.844 \\ \hline
 \bottomrule
 \end{tabularx}
+\begin{tablenotes}
+\item [备注] SQL语句参见附录A
+\end{tablenotes}
 \end{threeparttable}
 \end{table}
 
@@ -202,9 +244,10 @@
 \end{threeparttable}
 \end{table}
 
-从以上图表可以看出PostgreSQL在数据插入修改方面性能要优于MySQL.在查询对比中，
-MySQL的查询速度明显比PostgreSQL快,字段更新两者性能差不多。
-
+从以上图表可以看出PostgreSQL在数据插入修改方面性能要优于MySQL.在简单查询对比中，
+MySQL的查询速度明显比PostgreSQL快,
+在复杂查询中，MySQL随着数据量越来越大，时间梯度增长较大，性能越来越差，PostgreSQL在这方面要优于MySQL,
+字段更新两者性能差不多。
 
 \section{同步测试}
 MySQL和PostgreSQL都使用内部的复制模式，其中MySQL使用bin\_log，PostgreSQL使用streaming replication;
@@ -487,7 +530,7 @@ CREATE TABLE tbl_fax_records (
 \item 记录插入SQL语句(python)
 
 \begin{verbatim}
-"""INSERT INTO tbl_fax_records (
+"""INSERT INTO %s (
 faxid , taskid , fax_serv_addr , userid , receiver_number ,
 status , fee , time_long , npages , error ,
 error_descr , read_count , fax_start_date , fax_end_date , create_date ,
@@ -497,21 +540,28 @@ retries , max_retries , fax_res , fax_dcs , send_rate ,
 send_res , send_2D , send_ecm , retry_type , recipient ,
 recipient_company , area , number_type , hold_times) VALUES(
 '%s', '%s', '', '%s', '079733445566',
-3, 0.000, 0, 1, 13,
+3, 0.000, %s, %s, %s,
 NULL, 0, '%s', NULL, '%s',
 NULL, 0.000, NULL, '%s','%s',
-3, 105, 1, 0, NULL,
+3, 105, %s, 0, NULL,
 0, 3, 0, NULL, NULL,
 0, 0, 0, 0, 0,
 'dfd', '0797', 0,0);"""
 %
-(2100000207231448050 + index_i,
-2100000000000000050 + index_i,
-21000004 + index_i,
+(SQL_TABLE,
+4100000207231448050 + index_i,
+4100000000000000050 + index_i,
+41000004 + index_i,
+random.randrange(20),
+random.randrange(6),
+random.randrange(13),
+(datetime.datetime.now() + datetime.timedelta(random.randrange(-40,40))).
+                            strftime('%Y-%m-%d %H:%M:%S'),
+(datetime.datetime.now() + datetime.timedelta(random.randrange(-40,40) - 40)).
+                            strftime('%Y-%m-%d %H:%M:%S'),
 time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
 time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
-time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),)
+random.randrange(4)+1,)
 \end{verbatim}
 
 \item 多段查询SQL语句
@@ -547,18 +597,18 @@ create index index_ids on tbl_fax_records(faxid,taskid);
 \end{verbatim}
 
 \item 创建和删除触发器
-
-\begin{itemize}
-  \item MySQL
-\begin{verbatim}
+\begin{Verbatim}[frame=single,
+                label=MySQL,
+                xleftmargin=-2cm,
+                xrightmargin=-1cm]
 DROP TABLE IF EXISTS tab1;
 CREATE TABLE tab1(
     tab1_id varchar(50)
 );
 
 DROP TRIGGER IF EXISTS t_afterinsert_on_tbl_fax_records3;
-DELIMITER |
 
+DELIMITER |
 CREATE TRIGGER t_afterinsert_on_tbl_fax_records3
 AFTER INSERT ON tbl_fax_records3
 FOR EACH ROW
@@ -566,12 +616,11 @@ BEGIN
      insert into tab1(tab1_id) values(new.faxid);
 END
 |
-
 DELIMITER ;
 
 DROP TRIGGER IF EXISTS t_afterdelete_on_tbl_fax_records3;
-DELIMITER |
 
+DELIMITER |
 CREATE TRIGGER t_afterdelete_on_tbl_fax_records3
 AFTER DELETE ON tbl_fax_records3
 FOR EACH ROW
@@ -579,11 +628,12 @@ BEGIN
       delete from tab1 where tab1_id=old.faxid;
 END
 |
-
 DELIMITER ;
-\end{verbatim}
-  \item PostgreSQL
-\begin{verbatim}
+\end{Verbatim}
+\begin{Verbatim}[frame=single,
+                label=PostgreSQL,
+                xleftmargin=-2cm,
+                xrightmargin=-1cm]
 DROP TRIGGER IF EXISTS t_afterinsert_on_tbl_fax_records3
 ON tbl_fax_records3 RESTRICT;
 
@@ -617,10 +667,304 @@ CREATE TRIGGER t_afterdelete_on_tbl_fax_records3
 AFTER DELETE ON tbl_fax_records3
 FOR EACH ROW
 EXECUTE PROCEDURE after_delete_tbl_fax_records3_func();
-\end{verbatim}
-\end{itemize}
+\end{Verbatim}
 
+\item 存储过程统计SQL语句
+\begin{Verbatim}[frame=single,
+                label=MySQL存储过程-I,
+                xleftmargin=-2cm,
+                xrightmargin=-1cm]
+drop procedure if exists pr_test;
+DELIMITER |
+create procedure pr_test()
+BEGIN
+DECLARE v_circuit_succ_cnt INT DEFAULT 0;
+DECLARE v_circuit_fail_cnt INT DEFAULT 0;
+DECLARE v_circuit_time INT DEFAULT 0;
+DECLARE v_qadrecord_succ_cnt INT DEFAULT 0;
+DECLARE v_qadrecord_fail_cnt INT DEFAULT 0;
+DECLARE v_qadrecord_time INT DEFAULT 0;
+DECLARE v_corecord_succ_cnt INT DEFAULT 0;
+DECLARE v_corecord_fail_cnt INT DEFAULT 0;
+DECLARE v_task_time INT DEFAULT 0;
+DECLARE v_adrecordpage_succ_cnt INT DEFAULT 0;
+DECLARE v_adrecordpage_fail_cnt INT DEFAULT 0;
+DECLARE v_adtask_time INT DEFAULT 0;
+DECLARE v_send_fail_cnt INT DEFAULT 0;
 
+declare v_date varchar(20) default date(adddate(now(),-10));
+declare v_begindate varchar(25) default '';
+declare v_enddate varchar(25) default '';
+declare v_record_date_cnt int default 0;
+set v_begindate = concat(v_date,' 00:00:00');
+set v_enddate = concat(v_date,' 23:59:59');
+
+SELECT sum(CASE WHEN fax_type = 4 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 4 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 4 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 THEN time_long ELSE 0 END),
+       sum(CASE WHEN error >=100 and error<300 THEN npages ELSE 0 END)
+  INTO v_circuit_succ_cnt, v_circuit_fail_cnt, v_circuit_time,
+       v_qadrecord_succ_cnt, v_qadrecord_fail_cnt, v_qadrecord_time,
+       v_corecord_succ_cnt, v_corecord_fail_cnt, v_task_time,
+       v_adrecordpage_succ_cnt, v_adrecordpage_fail_cnt, v_adtask_time,
+       v_send_fail_cnt
+  FROM tbl_fax_records r
+ WHERE r.fax_start_date >= v_begindate and
+        r.fax_start_date <= v_enddate and
+        userid<>'80000050';
+
+ select v_circuit_succ_cnt, v_circuit_fail_cnt, v_circuit_time,
+       v_qadrecord_succ_cnt, v_qadrecord_fail_cnt, v_qadrecord_time,
+       v_corecord_succ_cnt, v_corecord_fail_cnt, v_task_time,
+       v_adrecordpage_succ_cnt, v_adrecordpage_fail_cnt, v_adtask_time,
+       v_send_fail_cnt;
+ END
+|
+DELIMITER ;
+
+/*run in client*/
+call pr_test();
+
+\end{Verbatim}
+
+\begin{Verbatim}[frame=single,
+                label=MySQL存储过程-II,
+                xleftmargin=-2cm,
+                xrightmargin=-1cm]
+drop procedure if exists pr2_test;
+DELIMITER |
+create procedure pr2_test()
+BEGIN
+
+declare v_date varchar(20) default date(adddate(now(),-1));
+declare v_begindate varchar(25) default '';
+declare v_enddate varchar(25) default '';
+declare v_record_date_cnt int default 0;
+
+set v_begindate = concat(v_date,' 00:00:00');
+set v_enddate = concat(v_date,' 23:59:59');
+
+SELECT count(0)
+     INTO v_record_date_cnt
+    FROM tbl_fax_records_date
+ WHERE fax_start_date >= v_begindate AND fax_start_date <= v_enddate;
+
+IF v_record_date_cnt <1 then
+    TRUNCATE tbl_fax_records_date;
+    INSERT INTO tbl_fax_records_date
+        SELECT DISTINCT fax_start_date
+              FROM tbl_fax_records
+           WHERE fax_start_date >= v_begindate AND 
+                    fax_start_date <= v_enddate;
+END IF;
+
+delete from tbl_today_areacode_statistics where statday = v_date;
+
+INSERT INTO tbl_today_areacode_statistics(statday,
+                                          stattime,
+                                          areacode,
+                                          sendcnt,
+                                          succeeds,
+                                          retries,
+                                          connectioncnt,
+                                          faileds)
+     SELECT adddate(date(now()), -1),
+            adddate(now(), -1),
+            area,
+            count(CASE WHEN error = 1 OR 
+                            (error >= 100 AND error < 300) 
+                            THEN 0 ELSE NULL END),
+            count(CASE WHEN error = 1 THEN 0 ELSE NULL END),
+            sum(retries),
+            count(CASE WHEN error = 1 OR 
+                            (error >= 102 AND error <= 105)
+                            THEN 0 ELSE NULL END),
+            count(CASE WHEN error >= 100 AND error < 300 
+                            THEN 0 ELSE NULL END)
+       FROM tbl_fax_records r, tbl_fax_records_date d
+      WHERE r.fax_start_date = d.fax_start_date
+   GROUP BY area;
+
+END;
+|
+DELIMITER ;
+\end{Verbatim}
+
+\begin{Verbatim}[frame=single,
+                label=PostgreSQL存储过程-I,
+                xleftmargin=-2cm,
+                xrightmargin=-1cm]
+DROP FUNCTION IF EXISTS pr_test();
+CREATE OR REPLACE FUNCTION pr_test()
+RETURNS SETOF RECORD AS
+$BODY$
+
+DECLARE v_circuit_succ_cnt INT DEFAULT 0;
+DECLARE v_circuit_fail_cnt INT DEFAULT 0;
+DECLARE v_circuit_time INT DEFAULT 0;
+DECLARE v_qadrecord_succ_cnt INT DEFAULT 0;
+DECLARE v_qadrecord_fail_cnt INT DEFAULT 0;
+DECLARE v_qadrecord_time INT DEFAULT 0;
+DECLARE v_corecord_succ_cnt INT DEFAULT 0;
+DECLARE v_corecord_fail_cnt INT DEFAULT 0;
+DECLARE v_task_time INT DEFAULT 0;
+DECLARE v_adrecordpage_succ_cnt INT DEFAULT 0;
+DECLARE v_adrecordpage_fail_cnt INT DEFAULT 0;
+DECLARE v_adtask_time INT DEFAULT 0;
+DECLARE v_send_fail_cnt INT DEFAULT 0;
+
+declare v_date varchar(20) default date(now() - interval '10 day');
+declare v_begindate varchar(25) default '';
+declare v_enddate varchar(25) default '';
+declare v_record_date_cnt int default 0;
+declare vbts timestamp;
+declare vbte timestamp;
+declare r int;
+BEGIN
+v_begindate := v_date || ' 00:00:00';
+v_enddate := v_date || ' 23:59:59';
+vbts := to_timestamp(v_begindate, 'YYYY-MM-DD HH24:MI:SS');
+vbte := to_timestamp(v_enddate, 'YYYY-MM-DD HH24:MI:SS');
+
+SELECT sum(CASE WHEN fax_type = 4 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 4 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 4 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 THEN time_long ELSE 0 END),
+       sum(CASE WHEN error >=100 and error<300 THEN npages ELSE 0 END)
+  INTO v_circuit_succ_cnt, v_circuit_fail_cnt, v_circuit_time,
+       v_qadrecord_succ_cnt, v_qadrecord_fail_cnt, v_qadrecord_time,
+       v_corecord_succ_cnt, v_corecord_fail_cnt, v_task_time,
+       v_adrecordpage_succ_cnt, v_adrecordpage_fail_cnt, v_adtask_time,
+       v_send_fail_cnt
+  FROM tbl_fax_records r
+ WHERE r.fax_start_date >= vbts and
+         r.fax_start_date <= vbte and
+         userid<>'80000050';
+
+return query select v_circuit_succ_cnt as v_circuit_succ_cnt,
+			v_circuit_fail_cnt as v_circuit_fail_cnt,
+			v_circuit_time as v_circuit_time,
+			v_qadrecord_succ_cnt as v_qadrecord_succ_cnt,
+			v_qadrecord_fail_cnt as v_qadrecord_fail_cnt,
+			v_qadrecord_time as v_qadrecord_time,
+			v_corecord_succ_cnt as v_corecord_succ_cnt,
+			v_corecord_fail_cnt as v_corecord_fail_cnt,
+			v_task_time as v_task_time,
+			v_adrecordpage_succ_cnt as v_adrecordpage_succ_cnt,
+			v_adrecordpage_fail_cnt as v_adrecordpage_fail_cnt,
+			v_adtask_time as v_adtask_time,
+			v_send_fail_cnt as v_send_fail_cnt;
+
+END;
+$BODY$
+LANGUAGE 'plpgsql' VOLATILE;
+
+/*run in client*/
+SELECT * from pr_test()AS foo(v_circuit_succ_cnt INT,
+				v_circuit_fail_cnt INT,
+				v_circuit_time INT,
+				v_qadrecord_succ_cnt INT,
+				v_qadrecord_fail_cnt INT,
+				v_qadrecord_time INT,	
+				v_corecord_succ_cnt INT,
+				v_corecord_fail_cnt INT,
+				v_task_time INT,
+				v_adrecordpage_succ_cnt INT,
+				v_adrecordpage_fail_cnt INT,
+				v_adtask_time INT,v_send_fail_cnt INT);
+
+\end{Verbatim}
+
+\begin{Verbatim}[label=PostgreSQL存储过程-II,
+                frame=single,                
+                xleftmargin=-2cm,
+                xrightmargin=-1cm]
+DROP FUNCTION IF EXISTS pr2_test();
+CREATE OR REPLACE FUNCTION pr2_test()
+RETURNS void AS
+$BODY$
+
+declare v_date varchar(20) default date(now() - interval '10 day');
+
+/*declare v_begindate varchar(25) default '';
+declare v_enddate varchar(25) default '';*/
+declare v_record_date_cnt int default 0;
+
+declare v_begindate timestamp;
+declare v_enddate timestamp;
+declare vbts varchar(25) default '';
+declare vbte varchar(25) default '';
+
+BEGIN
+
+vbts := v_date || ' 00:00:00';
+vbte := v_date || ' 23:59:59';
+
+v_begindate := to_timestamp(vbts, 'YYYY-MM-DD HH24:MI:SS');
+v_enddate := to_timestamp(vbte, 'YYYY-MM-DD HH24:MI:SS');
+
+SELECT count(0)
+     INTO v_record_date_cnt
+    FROM tbl_fax_records_date
+ WHERE fax_start_date >= v_begindate AND fax_start_date <= v_enddate;
+
+IF v_record_date_cnt <1 then
+    TRUNCATE tbl_fax_records_date;
+    INSERT INTO tbl_fax_records_date
+        SELECT DISTINCT fax_start_date
+              FROM tbl_fax_records
+           WHERE fax_start_date >= v_begindate AND 
+                    fax_start_date <= v_enddate;
+END IF;
+
+delete from tbl_today_areacode_statistics where statday = v_date;
+
+INSERT INTO tbl_today_areacode_statistics(statday,
+                                          stattime,
+                                          areacode,
+                                          sendcnt,
+                                          succeeds,
+                                          retries,
+                                          connectioncnt,
+                                          faileds)
+     SELECT date(now() - interval '10 day'),
+            date(now() - interval '10 day'),
+            area,
+            count(CASE WHEN error = 1 OR 
+                            (error >= 100 AND error < 300) 
+                            THEN 0 ELSE NULL END),
+            count(CASE WHEN error = 1 THEN 0 ELSE NULL END),
+            sum(retries),
+            count(CASE WHEN error = 1 OR 
+                            (error >= 102 AND error <= 105) 
+                            THEN 0 ELSE NULL END),
+            count(CASE WHEN error >= 100 AND error < 300 
+                            THEN 0 ELSE NULL END)
+       FROM tbl_fax_records r, tbl_fax_records_date d
+      WHERE r.fax_start_date = d.fax_start_date
+   GROUP BY area;
+
+END;
+$BODY$
+LANGUAGE 'plpgsql' VOLATILE;
+\end{Verbatim}   
 
 \begin{comment}
 \begin{table}[H]

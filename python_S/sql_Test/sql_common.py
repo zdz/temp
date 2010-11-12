@@ -3,14 +3,15 @@ import random
 import logging
 import datetime
 
-#SQL_SERVER_HOST='10.10.10.132'
-SQL_SERVER_HOST='localhost'
+SQL_SERVER_HOST='10.10.10.132'
+#SQL_SERVER_HOST='localhost'
 PG_SQL_USERNAME='postgres'
 PG_SQL_PASSWORD='postgres'
 SQL_USERNAME='root'
 SQL_PASSWORD='111111'
 SQL_DB='test'
-
+SQL_TABLE_INDEX = 1
+SQL_TABLE='tbl_fax_records%s' % SQL_TABLE_INDEX
 class SQL_Logger:
     def __init__ (self):        
         # set up logging to file - see previous section for more details
@@ -54,7 +55,7 @@ def ExeTime(func):
 
 
 PG_CREATE_CMD="""
-CREATE TABLE tbl_fax_records (
+CREATE TABLE %s (
   faxid varchar(50) NOT NULL DEFAULT '',
   taskid varchar(50) DEFAULT NULL,
   fax_serv_addr varchar(30) DEFAULT NULL,
@@ -95,10 +96,10 @@ CREATE TABLE tbl_fax_records (
   number_type integer DEFAULT NULL,
   hold_times int DEFAULT NULL,
   PRIMARY KEY (faxid,taskid,priority,create_date,fax_serv_addr,fax_start_date,kill_date,status,error,fax_type,userid,receiver_number)
-) ;"""
+) ;""" % SQL_TABLE
 
 MYSQL_CREATE_CMD="""
-CREATE TABLE IF NOT EXISTS `tbl_fax_records0` (
+CREATE TABLE IF NOT EXISTS `%s` (
   `faxid` varchar(50) NOT NULL DEFAULT '',
   `taskid` varchar(50) DEFAULT NULL,
   `fax_serv_addr` varchar(30) DEFAULT NULL,
@@ -150,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `tbl_fax_records0` (
   KEY `idx_fax_type` (`fax_type`),
   KEY `idx_user` (`userid`),
   KEY `idx_number` (`receiver_number`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;""" % SQL_TABLE
 
 """
 
@@ -168,7 +169,7 @@ time.strftime('%Y-%m-d %H:%M:%S',time.localtime()),
 """
 
 
-INSERT_CMD = """INSERT INTO tbl_fax_records0 (
+INSERT_CMD = """INSERT INTO %s (
 faxid , taskid , fax_serv_addr , userid , receiver_number , 
 status , fee , time_long , npages , error , 
 error_descr , read_count , fax_start_date , fax_end_date , create_date , 
@@ -187,6 +188,7 @@ NULL, 0.000, NULL, '%s','%s',
 'dfd', '0797', 0,0);"""
 
 INSERT_CMD_DATA = lambda index_i:( 
+                    SQL_TABLE,
                     4100000207231448050 + index_i,
                     4100000000000000050 + index_i,
                     41000004 + index_i,
