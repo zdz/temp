@@ -94,11 +94,13 @@ CREATE TABLE `tbl_today_areacode_statistics` (
 ========
 
 drop procedure if exists pr2_test;
+
 DELIMITER |
 create procedure pr2_test()
 BEGIN
 
 declare v_date varchar(20) default date(adddate(now(),-1));
+
 declare v_begindate varchar(25) default '';
 declare v_enddate varchar(25) default '';
 declare v_record_date_cnt int default 0;
@@ -106,7 +108,7 @@ declare v_record_date_cnt int default 0;
 set v_begindate = concat(v_date,' 00:00:00');
 set v_enddate = concat(v_date,' 23:59:59');
 
-SELECT count(0)
+SELECT SQL_NO_CACHE count(0)
      INTO v_record_date_cnt
     FROM tbl_fax_records_date
  WHERE fax_start_date >= v_begindate AND fax_start_date <= v_enddate;
@@ -114,10 +116,11 @@ SELECT count(0)
 IF v_record_date_cnt <1 then
     TRUNCATE tbl_fax_records_date;
     INSERT INTO tbl_fax_records_date
-        SELECT DISTINCT fax_start_date
+        SELECT SQL_NO_CACHE DISTINCT fax_start_date
               FROM tbl_fax_records
            WHERE fax_start_date >= v_begindate AND fax_start_date <= v_enddate;
 END IF;
+
 
 delete from tbl_today_areacode_statistics where statday = v_date;
 
@@ -129,7 +132,8 @@ INSERT INTO tbl_today_areacode_statistics(statday,
                                           retries,
                                           connectioncnt,
                                           faileds)
-     SELECT adddate(date(now()), -1),
+     SELECT SQL_NO_CACHE 
+            adddate(date(now()), -1),
             adddate(now(), -1),
             area,
             count(CASE WHEN error = 1 OR (error >= 100 AND error < 300) THEN 0 ELSE NULL END),
@@ -141,9 +145,11 @@ INSERT INTO tbl_today_areacode_statistics(statday,
       WHERE r.fax_start_date = d.fax_start_date
    GROUP BY area;
 
+
 END;
 |
 DELIMITER ;
+
 
 ======================================run in client======================================================
 

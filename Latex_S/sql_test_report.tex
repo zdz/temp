@@ -156,6 +156,49 @@
 \begin{tabularx}{7cm}{Xrr}\hline
 \toprule
 数据量 & MySQL & PostgreSQL \\ \hline \hline
+10000 & 0.12 & 0.012168 \\ \hline
+100000 & 1.4 & 0.131823 \\ \hline
+1000000 & 10.67 & 8.497914 \\ \hline
+10000000 & 101.16 & 78.565499 \\ \hline
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [备注1] 统计型存储过程
+\item [备注2] 存储过程参见附录-存储过程-I
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{存储过程-II【单位秒】}
+\begin{tabularx}{7cm}{Xrr}\hline
+\toprule
+数据量 & MySQL & PostgreSQL \\ \hline \hline
+10000 & 0.02 & 0.193763 \\ \hline
+100000 & 0.4 & 0.26784 \\ \hline
+1000000 & 3.03 & 2.641781 \\ \hline
+10000000 & 103.04 & 160.846253 \\ \hline
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [备注1] 存储过程带查询插入删除统计操作
+\item [备注2] 这个存储过程比较中的时间差主要是前半段简单查询(select)带来的
+\item [备注3] 存储过程参见附录-存储过程-II
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{comment}
+%old
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{存储过程-I【单位秒】}
+\begin{tabularx}{7cm}{Xrr}\hline
+\toprule
+数据量 & MySQL & PostgreSQL \\ \hline \hline
 10000 & 0.21 & 0.016756 \\ \hline
 100000 & 1 & 0.118963 \\ \hline
 1000000 & 9 & 1.315248 \\ \hline
@@ -163,7 +206,8 @@
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}
-\item [备注] 统计型存储过程
+\item [备注1] 统计型存储过程
+\item [备注2] 存储过程参见附录-存储过程-I
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -182,10 +226,13 @@
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}
-\item [备注] 存储过程带查询插入删除统计操作
+\item [备注1] 存储过程带查询插入删除统计操作
+\item [备注2] 这个存储过程比较中的时间差主要是前半段简单查询(select)带来的
+\item [备注3] 存储过程参见附录-存储过程-II
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
+\end{comment}
 
 \begin{table}[H]
 \centering
@@ -209,7 +256,7 @@
 \begin{table}[H]
 \centering
 \begin{threeparttable}[b]
-\caption{创建索引【单位秒】}
+\caption{创建索引-I【单位秒】}
 \begin{tabularx}{7cm}{Xrr}\hline
 \toprule
 数据量 & MySQL & PostgreSQL \\ \hline \hline
@@ -220,7 +267,28 @@
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}
-\item [备注] SQL语句参见附录A
+\item [备注1] 双字段
+\item [备注2] SQL语句参见附录A
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{创建索引-II【单位秒】}
+\begin{tabularx}{7cm}{Xrr}\hline
+\toprule
+数据量 & MySQL & PostgreSQL \\ \hline \hline
+10000 & 4.38 & 0.327155 \\ \hline
+100000 & 61.88 & 7.79451 \\ \hline
+1000000 & 612.86 & 74.497432 \\ \hline
+10000000 & 8329.65 & 811.678404 \\ \hline
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [备注1] 索引字段大于10
+\item [备注2] SQL语句参见附录A
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
@@ -244,10 +312,11 @@
 \end{threeparttable}
 \end{table}
 
-从以上图表可以看出PostgreSQL在数据插入修改方面性能要优于MySQL.在简单查询对比中，
-MySQL的查询速度明显比PostgreSQL快,
-在复杂查询中，MySQL随着数据量越来越大，时间梯度增长较大，性能越来越差，PostgreSQL在这方面要优于MySQL,
-字段更新两者性能差不多。
+从以上图表可以看出PostgreSQL在数据插入修改方面性能要优于MySQL,字段更新两者性能差不多。
+在统计型查询中，MySQL随着数据量越来越大，时间梯度增长较大，性能越来越差，PostgreSQL在这方面要优于MySQL。
+MySQL的优势在于简单查询，在简单查询对比中，MySQL的查询速度明显比PostgreSQL快,
+所以在综合型存储过程（存储过程II）中，带简单查询越多，MySQL的速度优势越明显。
+
 
 \section{同步测试}
 MySQL和PostgreSQL都使用内部的复制模式，其中MySQL使用bin\_log，PostgreSQL使用streaming replication;
@@ -557,10 +626,10 @@ NULL, 0.000, NULL, '%s','%s',
 random.randrange(20),
 random.randrange(6),
 random.randrange(13),
-(datetime.datetime.now() + 
+(datetime.datetime.now() +
             datetime.timedelta(random.randrange(-40,40))).
                             strftime('%Y-%m-%d %H:%M:%S'),
-(datetime.datetime.now() + 
+(datetime.datetime.now() +
             datetime.timedelta(random.randrange(-40,40) - 40)).
                             strftime('%Y-%m-%d %H:%M:%S'),
 time.strftime('%Y-%m-%d %H:%M:%S',time.localtime()),
@@ -598,6 +667,12 @@ alter table tbl_fax_records add x  smallint(4);
 
 \begin{verbatim}
 create index index_ids on tbl_fax_records(faxid,taskid);
+
+create index index_ids_t on 
+    tbl_fax_records(faxid,taskid,fax_type,error,npages,
+    time_long,priority,create_date,fax_serv_addr,
+    fax_start_date,kill_date,status,userid,
+    area,retries,receiver_number);
 \end{verbatim}
 
 \item 创建和删除触发器
@@ -757,7 +832,7 @@ declare v_record_date_cnt int default 0;
 set v_begindate = concat(v_date,' 00:00:00');
 set v_enddate = concat(v_date,' 23:59:59');
 
-SELECT count(0)
+SELECT SQL_NO_CACHE count(0)
      INTO v_record_date_cnt
     FROM tbl_fax_records_date
  WHERE fax_start_date >= v_begindate AND fax_start_date <= v_enddate;
@@ -765,7 +840,7 @@ SELECT count(0)
 IF v_record_date_cnt <1 then
     TRUNCATE tbl_fax_records_date;
     INSERT INTO tbl_fax_records_date
-        SELECT DISTINCT fax_start_date
+        SELECT SQL_NO_CACHE DISTINCT fax_start_date
               FROM tbl_fax_records
            WHERE fax_start_date >= v_begindate AND
                     fax_start_date <= v_enddate;
@@ -781,7 +856,8 @@ INSERT INTO tbl_today_areacode_statistics(statday,
                                           retries,
                                           connectioncnt,
                                           faileds)
-     SELECT adddate(date(now()), -1),
+     SELECT SQL_NO_CACHE
+            adddate(date(now()), -1),
             adddate(now(), -1),
             area,
             count(CASE WHEN error = 1 OR
@@ -811,7 +887,6 @@ DROP FUNCTION IF EXISTS pr_test();
 CREATE OR REPLACE FUNCTION pr_test()
 RETURNS SETOF RECORD AS
 $BODY$
-
 DECLARE v_circuit_succ_cnt INT DEFAULT 0;
 DECLARE v_circuit_fail_cnt INT DEFAULT 0;
 DECLARE v_circuit_time INT DEFAULT 0;
@@ -825,7 +900,6 @@ DECLARE v_adrecordpage_succ_cnt INT DEFAULT 0;
 DECLARE v_adrecordpage_fail_cnt INT DEFAULT 0;
 DECLARE v_adtask_time INT DEFAULT 0;
 DECLARE v_send_fail_cnt INT DEFAULT 0;
-
 declare v_date varchar(20) default date(now() - interval '10 day');
 declare v_begindate varchar(25) default '';
 declare v_enddate varchar(25) default '';
@@ -834,6 +908,7 @@ declare vbts timestamp;
 declare vbte timestamp;
 declare r int;
 BEGIN
+
 v_begindate := v_date || ' 00:00:00';
 v_enddate := v_date || ' 23:59:59';
 vbts := to_timestamp(v_begindate, 'YYYY-MM-DD HH24:MI:SS');
