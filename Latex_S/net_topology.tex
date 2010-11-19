@@ -1,0 +1,104 @@
+\documentclass[a4paper]{article}
+\usepackage{CJK}
+\usepackage{geometry}
+\usepackage{upgreek}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{fancybox}
+\usepackage{float}
+\usepackage{slashbox}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{verbatim}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{fancyvrb}
+\usepackage{threeparttable}
+%\pagenumbering{Roman}
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{}
+\cfoot{\thepage\ of \pageref{LastPage}}%当前页 of 总页数
+\rfoot{}
+\renewcommand{\headrulewidth}{0.0pt}%改为0pt即可去掉页眉下面的横线
+\renewcommand{\footrulewidth}{0.0pt}%改为0pt即可去掉页脚上面的横线
+
+\definecolor{mygray}{gray}{.9}
+
+\begin{document}
+\begin{CJK}{GBK}{hei}
+\author{Joe.zhou}
+\title{测试机拓补}
+\maketitle
+%\tableofcontents
+
+\begin{figure}[hbtp]
+\caption{测试机网络拓补图}
+\begin{center}
+\includegraphics[scale=0.5]{pic/net_topology.png}
+\end{center}
+\end{figure}
+
+\begin{Verbatim}[label=Windows,
+                frame=single,
+                xleftmargin=0cm,
+                xrightmargin=0cm]
+--add--
+route add 172.30.0.0 mask 255.255.0.0 10.10.88.88 metric 3 if 2
+
+--del--
+route delete 172.30.0.0
+\end{Verbatim}
+
+\begin{Verbatim}[label=Linux,
+                frame=single,
+                xleftmargin=0cm,
+                xrightmargin=0cm]
+--add--
+route add -net 172.30.0.0 mask 255.255.0.0 gw 10.10.88.88 dev eth0
+
+--del--
+route del -net 172.30.0.0 mask 255.255.0.0 gw 10.10.88.88 dev eth0
+\end{Verbatim}
+
+\noindent 测试机 \\
+OS:ubuntu server 10.04 \\
+username:test \\
+password:111111 \\
+
+\begin{Verbatim}[label=testserver001,
+                frame=single]
+IP  : 172.30.0.10
+CPU : Intel(R) Celeron(R) CPU 2.26GHz
+MEM : 512M 
+HD  : 40G
+\end{Verbatim}
+
+\begin{Verbatim}[label=testserver002,
+                frame=single]
+IP  : 172.30.0.11
+CPU : Intel(R) Celeron(TM) CPU 1400MHz
+MEM : 512M
+HD  : 40G
+\end{Verbatim}
+
+\begin{Verbatim}[label=testserver003,
+                frame=single]
+IP  : 172.30.0.12
+CPU : Intel(R) Pentium(R) 4 CPU 2.26GHz
+MEM : 1G
+HD  : 80G
+\end{Verbatim}
+
+
+\end{CJK}
+\end{document} 
+
+
