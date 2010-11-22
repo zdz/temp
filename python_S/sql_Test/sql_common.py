@@ -3,8 +3,8 @@ import random
 import logging
 import datetime
 
-SQL_SERVER_HOST='10.10.10.132'
-#SQL_SERVER_HOST='localhost'
+#SQL_SERVER_HOST='10.10.10.132'
+SQL_SERVER_HOST='localhost'
 PG_SQL_USERNAME='postgres'
 PG_SQL_PASSWORD='postgres'
 SQL_USERNAME='root'
