@@ -1,0 +1,117 @@
+\documentclass[a4paper]{article}
+\usepackage{CJK}
+\usepackage{geometry}
+\usepackage{upgreek}
+\usepackage{amsmath}
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{fancybox}
+\usepackage{float}
+\usepackage{slashbox}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{verbatim}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{fancyvrb}
+\usepackage{threeparttable}
+%\pagenumbering{Roman}
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{}
+\cfoot{\thepage\ of \pageref{LastPage}}%当前页 of 总页数
+\rfoot{}
+\renewcommand{\headrulewidth}{0.0pt}%改为0pt即可去掉页眉下面的横线
+\renewcommand{\footrulewidth}{0.0pt}%改为0pt即可去掉页脚上面的横线
+
+\definecolor{mygray}{gray}{.9}
+
+\begin{document}
+\begin{CJK}{GBK}{hei}
+\author{Joe.zhou}
+\title{SQL 测试报告}
+\maketitle
+%\tableofcontents
+
+\section{实验环境}
+\begin{itemize}
+  \item 实验服务器配置
+        \begin{description}
+          \item[Name : ] testserver2
+          \item[OS : ] CentOS release 5.3 (Final)
+          \item[Cpu : ] Intel(R) Pentium(R) 4 CPU 2.26GHz
+          \item[Memory : ] 1G
+          \item[Ip : ] 10.10.10.132
+        \end{description}
+  \item 数据库版本
+    \begin{description}
+      \item[MySQL] : MySQL Server Community 5.1.52
+      \item[PostgreSQL] : PostgreSQL 9.0.1-1
+    \end{description}
+
+\end{itemize}
+
+
+
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{MySQL 参数设置}
+\begin{tabularx}{14cm}{lccX}\hline
+\toprule
+Variables & Default & Optimization & Description \\ \hline \hline
+back\_log & 50 & 1024 & 要求 MySQL 能有的连接数量 \\ \hline
+key\_buffer\_size & 8384512 & 384M & 用于指定用于索引的缓冲区大小，增加它可得到更好处理的索引 \\ \hline	
+max\_heap\_table\_size & 16777216 & 64M & 有助于group by查询 \\ \hline
+myisam\_sort\_buffer\_size & 8388608 & 64M &  \\ \hline
+query\_cache\_size & 0 & 64M & 指定MySQL查询缓冲区的大小 \\ \hline
+read\_buffer\_size & 131072 & 4M & 4kb的倍数，读查询操作所能使用的缓冲区大小。和sort\_buffer\_size一样，该参数对应的分配内存也是每连接独享 \\ \hline			
+sort\_buffer\_size & 2097144 & 4M & 查询排序时所能使用的缓冲区大小。注意：该参数对应的分配内存是每连接独占!如果有100个连接，那么实际分配的总共排序缓冲区大小为100*4= 400MB。所以，对于内存在4GB左右的服务器推荐设置为4-8M。	\\ \hline
+join\_buffer\_size & 131072 & 8M & 联合查询操作所能使用的缓冲区大小，和sort\_buffer\_size一样，该参数对应的分配内存也是每连接独享\\ \hline
+innodb\_thread\_concurrency & 8 & 16 & 并发线程 cpu数X2 \\ \hline
+innodb\_buffer\_pool\_size & 8388608 & 700M & 缓冲池大小，有效减少磁盘IO读写 \\ \hline
+thread\_cache\_size & 0 & 128 & 服务器线程重用数量 \\ \hline
+max\_connections & 151 & 1024 & 客户端同时连接的数目 \\ \hline									
+table\_open\_cache & 64 & 128 & 打开表的数量，会占用系统文件描述符 \\ \hline									
+max\_allowed\_packet & 1048576 & 32M & 优化对large BLOB columns or long strings的处理 \\ \hline		
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [备注] 无
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{PostgreSQL 参数设置}
+\begin{tabularx}{14cm}{lccX}\hline
+\toprule
+Variables & Default & Optimization & Description \\ \hline \hline
+shared\_buffers & 32MB & 256M & 数据缓存,通常设置为RAM的10\% \\ \hline
+work\_mem & 1M & 256M & 增加work\_mem有助于提高排序的速度。通常设置为实际RAM的$2\%-4\%$ \\ \hline
+effective\_cache\_size & 128M & 700M & PostgreSQL能够使用的最大缓存 \\ \hline
+maintenance\_work\_mem & 16M & 128M & 维护之用 \\ \hline
+max\_connections & 100 & 1024 & 连接数 \\ \hline
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [备注] 无
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+
+
+\end{CJK}
+\end{document} 
