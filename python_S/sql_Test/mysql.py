@@ -115,8 +115,8 @@ class MySQLTester:
 if __name__ == "__main__":
     mysql_logger.info("begin")
     mysql_p = MySQL_P()
-    #mysql_p.create_e()
-    mysql_p.insert_fact_e()
+    mysql_p.create_e()
+    #mysql_p.insert_fact_e()
     #mysql_p.insert_e(1000)
     #mysql_t = MySQLTester()
     #mysql_t.thread_t()

@@ -35,7 +35,7 @@
 \begin{document}
 \begin{CJK}{GBK}{hei}
 \author{Joe.zhou}
-\title{SQL ²âÊÔ±¨¸æ}
+\title{SQL ²ÎÊıÓÅ»¯}
 \maketitle
 %\tableofcontents
 
@@ -60,6 +60,14 @@
 
 
 
+Ö÷Òªµ÷Õû·½Ãæ
+\begin{itemize}
+  \item µ¥Ò»Ö÷¼ü
+  \item ¼ò»¯Ë÷Òı×Ö¶Î
+  \item ÓÅ»¯ÅäÖÃ²ÎÊı
+  \item Ê¹ÓÃvacuum full,vacuum analyze¶ÔpostgresqlÕûÀí¿Õ¼äºÍ¸üĞÂÍ³¼ÆĞÅÏ¢£¬Ê¹µÃ²éÑ¯ÓÅ»¯Æ÷ÄÜ¹»Ñ¡Ôñ¸üºÃµÄ·½°¸Ö´ĞĞsql
+\end{itemize}
+
 \begin{table}[H]
 \centering
 \begin{threeparttable}[b]
@@ -72,7 +80,7 @@ key\_buffer\_size & 8384512 & 384M & ÓÃÓÚÖ¸¶¨ÓÃÓÚË÷ÒıµÄ»º³åÇø´óĞ¡£¬Ôö¼ÓËü¿ÉµÃµ½¸
 max\_heap\_table\_size & 16777216 & 64M & ÓĞÖúÓÚgroup by²éÑ¯ \\ \hline
 myisam\_sort\_buffer\_size & 8388608 & 64M &  \\ \hline
 query\_cache\_size & 0 & 64M & Ö¸¶¨MySQL²éÑ¯»º³åÇøµÄ´óĞ¡ \\ \hline
-read\_buffer\_size & 131072 & 4M & 4kbµÄ±¶Êı£¬¶Á²éÑ¯²Ù×÷ËùÄÜÊ¹ÓÃµÄ»º³åÇø´óĞ¡¡£ºÍsort\_buffer\_sizeÒ»Ñù£¬¸Ã²ÎÊı¶ÔÓ¦µÄ·ÖÅäÄÚ´æÒ²ÊÇÃ¿Á¬½Ó¶ÀÏí \\ \hline			
+read\_buffer\_size & 131072 & 4M & 4kbµÄ±¶Êı£¬¶Á²éÑ¯²Ù×÷ËùÄÜÊ¹ÓÃµÄ»º³åÇø´óĞ¡¡£ºÍsort\_buffer\_sizeÒ»Ñù£¬¸Ã²ÎÊı¶ÔÓ¦µÄ·ÖÅäÄÚ´æÒ²ÊÇÃ¿Á¬½Ó¶ÀÏí \\ \hline			 
 sort\_buffer\_size & 2097144 & 4M & ²éÑ¯ÅÅĞòÊ±ËùÄÜÊ¹ÓÃµÄ»º³åÇø´óĞ¡¡£×¢Òâ£º¸Ã²ÎÊı¶ÔÓ¦µÄ·ÖÅäÄÚ´æÊÇÃ¿Á¬½Ó¶ÀÕ¼!Èç¹ûÓĞ100¸öÁ¬½Ó£¬ÄÇÃ´Êµ¼Ê·ÖÅäµÄ×Ü¹²ÅÅĞò»º³åÇø´óĞ¡Îª100*4= 400MB¡£ËùÒÔ£¬¶ÔÓÚÄÚ´æÔÚ4GB×óÓÒµÄ·şÎñÆ÷ÍÆ¼öÉèÖÃÎª4-8M¡£	\\ \hline
 join\_buffer\_size & 131072 & 8M & ÁªºÏ²éÑ¯²Ù×÷ËùÄÜÊ¹ÓÃµÄ»º³åÇø´óĞ¡£¬ºÍsort\_buffer\_sizeÒ»Ñù£¬¸Ã²ÎÊı¶ÔÓ¦µÄ·ÖÅäÄÚ´æÒ²ÊÇÃ¿Á¬½Ó¶ÀÏí\\ \hline
 innodb\_thread\_concurrency & 8 & 16 & ²¢·¢Ïß³Ì cpuÊıX2 \\ \hline
@@ -112,6 +120,59 @@ max\_connections & 100 & 1024 & Á¬½ÓÊı \\ \hline
 \end{table}
 
 
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{´æ´¢¹ı³ÌI}
+%\begin{tabular}{c c c c}\hline
+\begin{tabularx}{9cm}{Xcccc}\hline
+\toprule
+\multicolumn{1}{l}{\multirow{2}*{Êı¾İÁ¿}} & \multicolumn{2}{c}{MySQL} & \multicolumn{2}{c}{PostgreSQL} \\ \cline{2-5}
+\multicolumn{1}{l}{}                      & ÓÅ»¯Ç° & ÓÅ»¯ºó & ÓÅ»¯Ç° & ÓÅ»¯ºó \\ \hline \hline
+10000    & 0.12 & - & 0.012168 & 0.00291 \\ \hline
+100000   & 1.4 & - & 0.131823 & 0.069809 \\ \hline
+1000000  & 10.67 & - & 8.497914 & 0.538696 \\ \hline
+10000000 & 101.16 & - & 78.565499 & 55.316844 \\ \hline
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [±¸×¢] ÎŞ
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{´æ´¢¹ı³ÌII}
+%\begin{tabular}{c c c c}\hline
+\begin{tabularx}{9cm}{Xcccc}\hline
+\toprule
+\multicolumn{1}{l}{\multirow{2}*{Êı¾İÁ¿}} & \multicolumn{2}{c}{MySQL} & \multicolumn{2}{c}{PostgreSQL} \\ \cline{2-5}
+\multicolumn{1}{l}{}                      & ÓÅ»¯Ç° & ÓÅ»¯ºó & ÓÅ»¯Ç° & ÓÅ»¯ºó \\ \hline \hline
+10000    & 0.02 & - & 0.193763 & 0.03189 \\ \hline
+100000   & 0.4 & - & 0.26748 & 0.129037 \\ \hline
+1000000  & 3.03 & - & 2.641781 & 1.416095 \\ \hline
+10000000 & 103.04 & - & 158.84625 & 136.706222 \\ \hline
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [±¸×¢] ÎŞ
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+
+
+
+
+
+
+\noindent\textbf{Reference : }
+
+\noindent \url{http://dev.mysql.com/doc/refman/5.1/zh/storage-engines.html#innodb-tuning} \\
+\url{http://dev.mysql.com/doc/refman/5.1/en/optimization.html} \\
+\url{http://dev.mysql.com/doc/refman/5.1/zh/optimization.html}
 
 \end{CJK}
 \end{document} 

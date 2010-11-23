@@ -9,8 +9,8 @@ PG_SQL_USERNAME='postgres'
 PG_SQL_PASSWORD='postgres'
 SQL_USERNAME='root'
 SQL_PASSWORD='111111'
-SQL_DB='test'
-SQL_TABLE_INDEX = 1
+SQL_DB='test12'
+SQL_TABLE_INDEX = ''
 SQL_TABLE='tbl_fax_records%s' % SQL_TABLE_INDEX
 class SQL_Logger:
     def __init__ (self):        
@@ -95,7 +95,7 @@ CREATE TABLE %s (
   area varchar(5) DEFAULT NULL,
   number_type integer DEFAULT NULL,
   hold_times int DEFAULT NULL,
-  PRIMARY KEY (faxid,taskid,priority,create_date,fax_serv_addr,fax_start_date,kill_date,status,error,fax_type,userid,receiver_number)
+  PRIMARY KEY (faxid)
 ) ;""" % SQL_TABLE
 
 MYSQL_CREATE_CMD="""
@@ -139,18 +139,7 @@ CREATE TABLE IF NOT EXISTS `%s` (
   `area` varchar(5) DEFAULT NULL,
   `number_type` tinyint(4) DEFAULT NULL,
   `hold_times` int(11) DEFAULT NULL,
-  PRIMARY KEY (`faxid`),
-  KEY `fax_record_taskid` (`taskid`),
-  KEY `idx_priority` (`priority`),
-  KEY `idx_create_date` (`create_date`),
-  KEY `idx_addr` (`fax_serv_addr`),
-  KEY `idx_start_date` (`fax_start_date`),
-  KEY `idx_kill_date` (`kill_date`),
-  KEY `idx_status` (`status`),
-  KEY `idx_error` (`error`),
-  KEY `idx_fax_type` (`fax_type`),
-  KEY `idx_user` (`userid`),
-  KEY `idx_number` (`receiver_number`)
+  PRIMARY KEY (`faxid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;""" % SQL_TABLE
 
 """
