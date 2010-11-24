@@ -3,15 +3,18 @@ import random
 import logging
 import datetime
 
-#SQL_SERVER_HOST='10.10.10.132'
-SQL_SERVER_HOST='localhost'
+SQL_SERVER_HOST='10.10.10.132'
+#SQL_SERVER_HOST='localhost'
 PG_SQL_USERNAME='postgres'
 PG_SQL_PASSWORD='postgres'
 SQL_USERNAME='root'
 SQL_PASSWORD='111111'
 SQL_DB='test12'
-SQL_TABLE_INDEX = ''
+SQL_TABLE_INDEX = '3'
 SQL_TABLE='tbl_fax_records%s' % SQL_TABLE_INDEX
+CREATE_INDEX_SQL_CMD = 'CREATE INDEX index_ids_t ON %s(fax_start_date,fax_type, error, npages, time_long, area, retries);'% SQL_TABLE
+PG_CREATE_INDEX_SQL_CMD = 'CREATE INDEX index_ids_t%s ON %s(fax_start_date,fax_type, error, npages, time_long, area, retries);'% (SQL_TABLE_INDEX,SQL_TABLE)
+
 class SQL_Logger:
     def __init__ (self):        
         # set up logging to file - see previous section for more details
@@ -306,43 +309,269 @@ EXECUTE PROCEDURE after_delete_tbl_fax_records3_func();
 
 
 
-"""
 
-mysql> select count(*) from tbl_fax_records;
+MYSQL_CREATE_PR_TEST = """
+DROP procedure if exists pr_test%s;
 
-mysql> select * from tbl_fax_records where faxid < '4000000207231448051' limit 3;
+DELIMITER |
+create procedure pr_test%s()
+BEGIN
+DECLARE v_circuit_succ_cnt INT DEFAULT 0;
+DECLARE v_circuit_fail_cnt INT DEFAULT 0;
+DECLARE v_circuit_time INT DEFAULT 0;
+DECLARE v_qadrecord_succ_cnt INT DEFAULT 0;
+DECLARE v_qadrecord_fail_cnt INT DEFAULT 0;
+DECLARE v_qadrecord_time INT DEFAULT 0;
+DECLARE v_corecord_succ_cnt INT DEFAULT 0;
+DECLARE v_corecord_fail_cnt INT DEFAULT 0;
+DECLARE v_task_time INT DEFAULT 0;
+DECLARE v_adrecordpage_succ_cnt INT DEFAULT 0;
+DECLARE v_adrecordpage_fail_cnt INT DEFAULT 0;
+DECLARE v_adtask_time INT DEFAULT 0;
+DECLARE v_send_fail_cnt INT DEFAULT 0;
+
+declare v_date varchar(20) default date(adddate(now(),-10));
+
+declare v_begindate varchar(25) default '';
+declare v_enddate varchar(25) default '';
+declare v_record_date_cnt int default 0;
+
+set v_begindate = concat(v_date,' 00:00:00');
+set v_enddate = concat(v_date,' 23:59:59');
 
 
-select * from tbl_fax_records where status = 3 and receiver_number = '079733445566' and faxid like '40000002072314480%';
+SELECT SQL_NO_CACHE 
+       sum(CASE WHEN fax_type = 4 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 4 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 4 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 THEN time_long ELSE 0 END),
+       sum(CASE WHEN error >=100 and error<300 THEN npages ELSE 0 END)
+  INTO v_circuit_succ_cnt, v_circuit_fail_cnt, v_circuit_time,
+       v_qadrecord_succ_cnt, v_qadrecord_fail_cnt, v_qadrecord_time,
+       v_corecord_succ_cnt, v_corecord_fail_cnt, v_task_time,
+       v_adrecordpage_succ_cnt, v_adrecordpage_fail_cnt, v_adtask_time,
+       v_send_fail_cnt
+  FROM %s r
+ WHERE r.fax_start_date >=v_begindate and r.fax_start_date<=v_enddate and userid<>'80000050';
+ 
+ select SQL_NO_CACHE v_circuit_succ_cnt, v_circuit_fail_cnt, v_circuit_time,
+       v_qadrecord_succ_cnt, v_qadrecord_fail_cnt, v_qadrecord_time,
+       v_corecord_succ_cnt, v_corecord_fail_cnt, v_task_time,
+       v_adrecordpage_succ_cnt, v_adrecordpage_fail_cnt, v_adtask_time,
+       v_send_fail_cnt;
+ 
+ END
+|
+DELIMITER ;
+""" % (SQL_TABLE_INDEX,SQL_TABLE_INDEX,SQL_TABLE)
 
-mysql> select * from tbl_fax_records where faxid < '4000000207231448051';       Empty set (0.00 sec)
+MYSQL_CREATE_PR2_TEST = """
+drop procedure if exists pr2_test%s;
 
-mysql> select * from tbl_fax_records where faxid like '40000002072314480%';
-+---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
-| faxid               | taskid              | fax_serv_addr | userid   | receiver_number | status | fee   | time_long | npages | error | error_descr | read_count | fax_start_date      | fax_end_date | create_date         | jobid | actual_fee | sip_descr | submit_date         | kill_date           | ext_delay | priority | fax_type | ts_type | origin_error | retries | max_retries | fax_res | fax_dcs | send_rate | send_res | send_2D | send_ecm | retry_type | recipient | recipient_company | area | number_type | hold_times |
-+---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
-| 4000000207231448051 | 3000000000000000051 | NULL          | 40000005 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-+---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
-1 row in set (0.02 sec)
+DELIMITER |
+create procedure pr2_test%s()
+BEGIN
 
-mysql> select * from tbl_fax_records where faxid like '400000020723144805%';
-+---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
-| faxid               | taskid              | fax_serv_addr | userid   | receiver_number | status | fee   | time_long | npages | error | error_descr | read_count | fax_start_date      | fax_end_date | create_date         | jobid | actual_fee | sip_descr | submit_date         | kill_date           | ext_delay | priority | fax_type | ts_type | origin_error | retries | max_retries | fax_res | fax_dcs | send_rate | send_res | send_2D | send_ecm | retry_type | recipient | recipient_company | area | number_type | hold_times |
-+---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
-| 4000000207231448051 | 3000000000000000051 | NULL          | 40000005 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-| 4000000207231448052 | 3000000000000000052 | NULL          | 40000006 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-| 4000000207231448053 | 3000000000000000053 | NULL          | 40000007 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-| 4000000207231448054 | 3000000000000000054 | NULL          | 40000008 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-| 4000000207231448055 | 3000000000000000055 | NULL          | 40000009 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-| 4000000207231448056 | 3000000000000000056 | NULL          | 40000010 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-| 4000000207231448057 | 3000000000000000057 | NULL          | 40000011 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-| 4000000207231448058 | 3000000000000000058 | NULL          | 40000012 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-| 4000000207231448059 | 3000000000000000059 | NULL          | 40000013 | 079733445566    |      3 | 0.000 |         0 |      1 |    13 | NULL        |          0 | 2010-11-03 14:11:14 | NULL         | 2010-11-03 14:11:14 | NULL  |      0.000 | NULL      | 2010-11-03 14:11:14 | 2010-11-03 14:11:14 |         3 |      105 |        1 |       0 |         NULL |       0 |           3 |       0 | NULL    |      NULL |        0 |       0 |        0 |          0 | 0         | dfd               | 0797 |           0 |          0 |
-+---------------------+---------------------+---------------+----------+-----------------+--------+-------+-----------+--------+-------+-------------+------------+---------------------+--------------+---------------------+-------+------------+-----------+---------------------+---------------------+-----------+----------+----------+---------+--------------+---------+-------------+---------+---------+-----------+----------+---------+----------+------------+-----------+-------------------+------+-------------+------------+
-9 rows in set (0.00 sec)
+declare v_date varchar(20) default date(adddate(now(),-10));
 
-mysql> update tbl_fax_records set fax_serv_addr='localhost' where faxid like '400000020723144805%';
-Query OK, 9 rows affected (0.20 sec)
-Rows matched: 9  Changed: 9  Warnings: 0
+declare v_begindate varchar(25) default '';
+declare v_enddate varchar(25) default '';
+declare v_record_date_cnt int default 0;
 
-"""
+set v_begindate = concat(v_date,' 00:00:00');
+set v_enddate = concat(v_date,' 23:59:59');
+
+SELECT SQL_NO_CACHE count(0)
+     INTO v_record_date_cnt
+    FROM tbl_fax_records_date
+ WHERE fax_start_date >= v_begindate AND fax_start_date <= v_enddate;
+
+IF v_record_date_cnt <1 then
+    TRUNCATE tbl_fax_records_date;
+    INSERT INTO tbl_fax_records_date
+        SELECT SQL_NO_CACHE DISTINCT fax_start_date
+              FROM %s
+           WHERE fax_start_date >= v_begindate AND fax_start_date <= v_enddate;
+END IF;
+
+
+delete from tbl_today_areacode_statistics where statday = v_date;
+
+INSERT INTO tbl_today_areacode_statistics(statday,
+                                          stattime,
+                                          areacode,
+                                          sendcnt,
+                                          succeeds,
+                                          retries,
+                                          connectioncnt,
+                                          faileds)
+     SELECT SQL_NO_CACHE 
+            adddate(date(now()), -1),
+            adddate(now(), -1),
+            area,
+            count(CASE WHEN error = 1 OR (error >= 100 AND error < 300) THEN 0 ELSE NULL END),
+            count(CASE WHEN error = 1 THEN 0 ELSE NULL END),
+            sum(retries),
+            count(CASE WHEN error = 1 OR (error >= 102 AND error <= 105) THEN 0 ELSE NULL END),
+            count(CASE WHEN error >= 100 AND error < 300 THEN 0 ELSE NULL END)
+       FROM %s r, tbl_fax_records_date d
+      WHERE r.fax_start_date = d.fax_start_date
+   GROUP BY area;
+
+
+END;
+|
+DELIMITER ;
+""" % (SQL_TABLE_INDEX,SQL_TABLE_INDEX,SQL_TABLE,SQL_TABLE)
+
+
+PGSQL_CREATE_PR_TEST = """
+DROP FUNCTION IF EXISTS pr_test%s();
+CREATE OR REPLACE FUNCTION pr_test%s()
+RETURNS SETOF RECORD AS
+$BODY$
+
+DECLARE v_circuit_succ_cnt INT DEFAULT 0;
+DECLARE v_circuit_fail_cnt INT DEFAULT 0;
+DECLARE v_circuit_time INT DEFAULT 0;
+DECLARE v_qadrecord_succ_cnt INT DEFAULT 0;
+DECLARE v_qadrecord_fail_cnt INT DEFAULT 0;
+DECLARE v_qadrecord_time INT DEFAULT 0;
+DECLARE v_corecord_succ_cnt INT DEFAULT 0;
+DECLARE v_corecord_fail_cnt INT DEFAULT 0;
+DECLARE v_task_time INT DEFAULT 0;
+DECLARE v_adrecordpage_succ_cnt INT DEFAULT 0;
+DECLARE v_adrecordpage_fail_cnt INT DEFAULT 0;
+DECLARE v_adtask_time INT DEFAULT 0;
+DECLARE v_send_fail_cnt INT DEFAULT 0;
+
+declare v_date varchar(20) default date(now() - interval '10 day');
+
+declare v_begindate varchar(25) default '';
+declare v_enddate varchar(25) default '';
+declare v_record_date_cnt int default 0;
+declare vbts timestamp;
+declare vbte timestamp;
+declare r int;
+BEGIN
+
+v_begindate := v_date || ' 00:00:00';
+v_enddate := v_date || ' 23:59:59';
+
+vbts := to_timestamp(v_begindate, 'YYYY-MM-DD HH24:MI:SS');
+vbte := to_timestamp(v_enddate, 'YYYY-MM-DD HH24:MI:SS');
+
+PERFORM v_begindate,v_enddate,date(now() - interval '10 day');
+
+SELECT sum(CASE WHEN fax_type = 4 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 4 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 4 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 3 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 2 THEN time_long ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 AND error = 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 AND error != 1 THEN npages ELSE 0 END),
+       sum(CASE WHEN fax_type = 1 THEN time_long ELSE 0 END),
+       sum(CASE WHEN error >=100 and error<300 THEN npages ELSE 0 END)
+  INTO v_circuit_succ_cnt, v_circuit_fail_cnt, v_circuit_time,
+       v_qadrecord_succ_cnt, v_qadrecord_fail_cnt, v_qadrecord_time,
+       v_corecord_succ_cnt, v_corecord_fail_cnt, v_task_time,
+       v_adrecordpage_succ_cnt, v_adrecordpage_fail_cnt, v_adtask_time,
+       v_send_fail_cnt
+  FROM %s r
+ WHERE r.fax_start_date >=vbts and r.fax_start_date<=vbte and userid<>'80000050';
+ 
+return query select v_circuit_succ_cnt as v_circuit_succ_cnt, 
+			v_circuit_fail_cnt as v_circuit_fail_cnt, 
+			v_circuit_time as v_circuit_time,
+			v_qadrecord_succ_cnt as v_qadrecord_succ_cnt, 
+			v_qadrecord_fail_cnt as v_qadrecord_fail_cnt, 
+			v_qadrecord_time as v_qadrecord_time,
+			v_corecord_succ_cnt as v_corecord_succ_cnt, 
+			v_corecord_fail_cnt as v_corecord_fail_cnt, 
+			v_task_time as v_task_time,
+			v_adrecordpage_succ_cnt as v_adrecordpage_succ_cnt, 
+			v_adrecordpage_fail_cnt as v_adrecordpage_fail_cnt, 
+			v_adtask_time as v_adtask_time,
+			v_send_fail_cnt as v_send_fail_cnt;
+
+END;
+$BODY$
+LANGUAGE 'plpgsql' VOLATILE;
+""" % (SQL_TABLE_INDEX,SQL_TABLE_INDEX,SQL_TABLE)
+
+PGSQL_CREATE_PR2_TEST="""
+DROP FUNCTION IF EXISTS pr2_test%s();
+CREATE OR REPLACE FUNCTION pr2_test%s()
+RETURNS void AS
+$BODY$
+
+declare v_date varchar(20) default date(now() - interval '10 day');
+
+/*declare v_begindate varchar(25) default '';
+declare v_enddate varchar(25) default '';*/
+declare v_record_date_cnt int default 0;
+
+declare v_begindate timestamp;
+declare v_enddate timestamp;
+declare vbts varchar(25) default '';
+declare vbte varchar(25) default '';
+
+BEGIN
+
+vbts := v_date || ' 00:00:00';
+vbte := v_date || ' 23:59:59';
+
+v_begindate := to_timestamp(vbts, 'YYYY-MM-DD HH24:MI:SS');
+v_enddate := to_timestamp(vbte, 'YYYY-MM-DD HH24:MI:SS');
+
+SELECT count(0)
+     INTO v_record_date_cnt
+    FROM tbl_fax_records_date
+ WHERE fax_start_date >= v_begindate AND fax_start_date <= v_enddate;
+
+IF v_record_date_cnt <1 then
+    TRUNCATE tbl_fax_records_date;
+    INSERT INTO tbl_fax_records_date
+        SELECT DISTINCT fax_start_date
+              FROM %s
+           WHERE fax_start_date >= v_begindate AND fax_start_date <= v_enddate;
+END IF;
+
+delete from tbl_today_areacode_statistics where statday = v_date;
+
+INSERT INTO tbl_today_areacode_statistics(statday,
+                                          stattime,
+                                          areacode,
+                                          sendcnt,
+                                          succeeds,
+                                          retries,
+                                          connectioncnt,
+                                          faileds)
+     SELECT date(now() - interval '10 day'),
+            date(now() - interval '10 day'),
+            area,
+            count(CASE WHEN error = 1 OR (error >= 100 AND error < 300) THEN 0 ELSE NULL END),
+            count(CASE WHEN error = 1 THEN 0 ELSE NULL END),
+            sum(retries),
+            count(CASE WHEN error = 1 OR (error >= 102 AND error <= 105) THEN 0 ELSE NULL END),
+            count(CASE WHEN error >= 100 AND error < 300 THEN 0 ELSE NULL END)
+       FROM %s r, tbl_fax_records_date d
+      WHERE r.fax_start_date = d.fax_start_date
+   GROUP BY area;
+
+END;
+$BODY$
+LANGUAGE 'plpgsql' VOLATILE;
+""" % (SQL_TABLE_INDEX,SQL_TABLE_INDEX,SQL_TABLE,SQL_TABLE)

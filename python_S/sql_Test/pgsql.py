@@ -22,6 +22,9 @@ class PGSQL_P:
     @ExeTime
     def create_e(self):
         self._db.query(PG_CREATE_CMD)
+    def exe_e (self,sql_cmd):
+        self._db.query(sql_cmd)
+
     def select_e (self):
         self._db.query(SELECT_CMD)
 
@@ -105,7 +108,10 @@ class PGTester:
 if __name__ == "__main__":
     pgsql_logger.info("begin")
     pgsql_p = PGSQL_P()
-    pgsql_p.create_e()
+    #pgsql_p.create_e()
+    #pgsql_p.exe_e(PG_CREATE_INDEX_SQL_CMD)
+    pgsql_p.exe_e(PGSQL_CREATE_PR_TEST)
+    pgsql_p.exe_e(PGSQL_CREATE_PR2_TEST)
     #pgsql_p.insert_fact_e()
     #pgsql_p.insert_e(1000)   
     #pgtester=PGTester()

@@ -22,6 +22,12 @@ class MySQL_P:
         cursor.execute(sql_cmd) 
         self._conn.commit()
         cursor.close()
+
+    def exe_many_e (self,sql_cmd,*args,**kargs):
+        cursor = self._conn.cursor()  
+        cursor.execute(sql_cmd,*args,**kargs) 
+        self._conn.commit()
+        cursor.close()
         
     def create_e(self):
         self.exe_e(MYSQL_CREATE_CMD)
@@ -115,7 +121,11 @@ class MySQLTester:
 if __name__ == "__main__":
     mysql_logger.info("begin")
     mysql_p = MySQL_P()
-    mysql_p.create_e()
+    #mysql_p.create_e()
+    #mysql_p.exe_many_e(MYSQL_CREATE_PR_TEST)
+    #print MYSQL_CREATE_PR_TEST
+    print MYSQL_CREATE_PR2_TEST
+    #mysql_p.exe_e(MYSQL_CREATE_PR2_TEST)
     #mysql_p.insert_fact_e()
     #mysql_p.insert_e(1000)
     #mysql_t = MySQLTester()

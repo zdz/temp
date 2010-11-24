@@ -19,7 +19,7 @@
 \usepackage{fancyhdr}
 \usepackage{fancyvrb}
 \usepackage{threeparttable}
-%\pagenumbering{Roman}
+\pagenumbering{Roman}
 \pagestyle{fancy}
 \lhead{}
 \chead{}
@@ -58,7 +58,7 @@
 \end{itemize}
 
 
-
+\section{ÓÅ»¯µ÷Õû}
 
 Ö÷Òªµ÷Õû·½Ãæ
 \begin{itemize}
@@ -80,14 +80,14 @@ key\_buffer\_size & 8384512 & 384M & ÓÃÓÚÖ¸¶¨ÓÃÓÚË÷ÒıµÄ»º³åÇø´óĞ¡£¬Ôö¼ÓËü¿ÉµÃµ½¸
 max\_heap\_table\_size & 16777216 & 64M & ÓĞÖúÓÚgroup by²éÑ¯ \\ \hline
 myisam\_sort\_buffer\_size & 8388608 & 64M &  \\ \hline
 query\_cache\_size & 0 & 64M & Ö¸¶¨MySQL²éÑ¯»º³åÇøµÄ´óĞ¡ \\ \hline
-read\_buffer\_size & 131072 & 4M & 4kbµÄ±¶Êı£¬¶Á²éÑ¯²Ù×÷ËùÄÜÊ¹ÓÃµÄ»º³åÇø´óĞ¡¡£ºÍsort\_buffer\_sizeÒ»Ñù£¬¸Ã²ÎÊı¶ÔÓ¦µÄ·ÖÅäÄÚ´æÒ²ÊÇÃ¿Á¬½Ó¶ÀÏí \\ \hline			 
+read\_buffer\_size & 131072 & 4M & 4kbµÄ±¶Êı£¬¶Á²éÑ¯²Ù×÷ËùÄÜÊ¹ÓÃµÄ»º³åÇø´óĞ¡¡£ºÍsort\_buffer\_sizeÒ»Ñù£¬¸Ã²ÎÊı¶ÔÓ¦µÄ·ÖÅäÄÚ´æÒ²ÊÇÃ¿Á¬½Ó¶ÀÏí \\ \hline			
 sort\_buffer\_size & 2097144 & 4M & ²éÑ¯ÅÅĞòÊ±ËùÄÜÊ¹ÓÃµÄ»º³åÇø´óĞ¡¡£×¢Òâ£º¸Ã²ÎÊı¶ÔÓ¦µÄ·ÖÅäÄÚ´æÊÇÃ¿Á¬½Ó¶ÀÕ¼!Èç¹ûÓĞ100¸öÁ¬½Ó£¬ÄÇÃ´Êµ¼Ê·ÖÅäµÄ×Ü¹²ÅÅĞò»º³åÇø´óĞ¡Îª100*4= 400MB¡£ËùÒÔ£¬¶ÔÓÚÄÚ´æÔÚ4GB×óÓÒµÄ·şÎñÆ÷ÍÆ¼öÉèÖÃÎª4-8M¡£	\\ \hline
 join\_buffer\_size & 131072 & 8M & ÁªºÏ²éÑ¯²Ù×÷ËùÄÜÊ¹ÓÃµÄ»º³åÇø´óĞ¡£¬ºÍsort\_buffer\_sizeÒ»Ñù£¬¸Ã²ÎÊı¶ÔÓ¦µÄ·ÖÅäÄÚ´æÒ²ÊÇÃ¿Á¬½Ó¶ÀÏí\\ \hline
 innodb\_thread\_concurrency & 8 & 16 & ²¢·¢Ïß³Ì cpuÊıX2 \\ \hline
 innodb\_buffer\_pool\_size & 8388608 & 700M & »º³å³Ø´óĞ¡£¬ÓĞĞ§¼õÉÙ´ÅÅÌIO¶ÁĞ´ \\ \hline
 thread\_cache\_size & 0 & 128 & ·şÎñÆ÷Ïß³ÌÖØÓÃÊıÁ¿ \\ \hline
 max\_connections & 151 & 1024 & ¿Í»§¶ËÍ¬Ê±Á¬½ÓµÄÊıÄ¿ \\ \hline									
-table\_open\_cache & 64 & 128 & ´ò¿ª±íµÄÊıÁ¿£¬»áÕ¼ÓÃÏµÍ³ÎÄ¼şÃèÊö·û \\ \hline									
+table\_open\_cache & 64 & 128 & ´ò¿ª±íµÄÊıÁ¿£¬»áÕ¼ÓÃÏµÍ³ÎÄ¼şÃèÊö·û \\ \hline									 
 max\_allowed\_packet & 1048576 & 32M & ÓÅ»¯¶Ôlarge BLOB columns or long stringsµÄ´¦Àí \\ \hline		
 \bottomrule
 \end{tabularx}
@@ -96,8 +96,6 @@ max\_allowed\_packet & 1048576 & 32M & ÓÅ»¯¶Ôlarge BLOB columns or long stringsµ
 \end{tablenotes}
 \end{threeparttable}
 \end{table}
-
-
 
 \begin{table}[H]
 \centering
@@ -119,20 +117,21 @@ max\_connections & 100 & 1024 & Á¬½ÓÊı \\ \hline
 \end{threeparttable}
 \end{table}
 
-
+\section{²âÊÔ}
+\noindent ÒÔÏÂÊÇÁ½¸ö´æ´¢¹ı³ÌµÄ²âÊÔÊı¾İ
 \begin{table}[H]
 \centering
 \begin{threeparttable}[b]
-\caption{´æ´¢¹ı³ÌI}
+\caption{´æ´¢¹ı³ÌI¡¾µ¥Î»Ãë¡¿}
 %\begin{tabular}{c c c c}\hline
-\begin{tabularx}{9cm}{Xcccc}\hline
+\begin{tabularx}{9cm}{Xrrrr}\hline
 \toprule
 \multicolumn{1}{l}{\multirow{2}*{Êı¾İÁ¿}} & \multicolumn{2}{c}{MySQL} & \multicolumn{2}{c}{PostgreSQL} \\ \cline{2-5}
 \multicolumn{1}{l}{}                      & ÓÅ»¯Ç° & ÓÅ»¯ºó & ÓÅ»¯Ç° & ÓÅ»¯ºó \\ \hline \hline
-10000    & 0.12 & - & 0.012168 & 0.00291 \\ \hline
-100000   & 1.4 & - & 0.131823 & 0.069809 \\ \hline
-1000000  & 10.67 & - & 8.497914 & 0.538696 \\ \hline
-10000000 & 101.16 & - & 78.565499 & 55.316844 \\ \hline
+10000    & 0.12 & 0.15 & 0.012168 & 0.045978 \\ \hline
+100000   & 1.4 & 1.02 & 0.131823 & 0.096705 \\ \hline
+1000000  & 10.67 & 8.93 & 8.497914 & 0.187756 \\ \hline
+10000000 & 101.16 & 97.65 & 78.565499 & 59.027225 \\ \hline
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}
@@ -145,16 +144,16 @@ max\_connections & 100 & 1024 & Á¬½ÓÊı \\ \hline
 \begin{table}[H]
 \centering
 \begin{threeparttable}[b]
-\caption{´æ´¢¹ı³ÌII}
+\caption{´æ´¢¹ı³ÌII¡¾µ¥Î»Ãë¡¿}
 %\begin{tabular}{c c c c}\hline
-\begin{tabularx}{9cm}{Xcccc}\hline
+\begin{tabularx}{9cm}{Xrrrr}\hline
 \toprule
 \multicolumn{1}{l}{\multirow{2}*{Êı¾İÁ¿}} & \multicolumn{2}{c}{MySQL} & \multicolumn{2}{c}{PostgreSQL} \\ \cline{2-5}
 \multicolumn{1}{l}{}                      & ÓÅ»¯Ç° & ÓÅ»¯ºó & ÓÅ»¯Ç° & ÓÅ»¯ºó \\ \hline \hline
-10000    & 0.02 & - & 0.193763 & 0.03189 \\ \hline
-100000   & 0.4 & - & 0.26748 & 0.129037 \\ \hline
-1000000  & 3.03 & - & 2.641781 & 1.416095 \\ \hline
-10000000 & 103.04 & - & 158.84625 & 136.706222 \\ \hline
+10000    & 0.02 & 0.05 & 0.193763 & 0.307406 \\ \hline
+100000   & 0.4 & 0.1 & 0.26748 & 1.518713 \\ \hline
+1000000  & 3.03 & 0.94 & 2.641781 & 2.692643 \\ \hline
+10000000 & 103.04 & 4.64 & 158.84625 & 80.534765 \\ \hline
 \bottomrule
 \end{tabularx}
 \begin{tablenotes}
@@ -164,15 +163,66 @@ max\_connections & 100 & 1024 & Á¬½ÓÊı \\ \hline
 \end{table}
 
 
+´æ´¢¹ı³ÌIIÖĞÊ±¼ä²î±ğÔÚÓÚÒÔÏÂÕâ¾äSQL£¬Ò»Ç§ÍòÊı¾İ²é³ö½á¹û´ó¸ÅÓĞ38000¶àÌõ¡£\\
+¾­ÊµÑé·¢ÏÖmysqlÈç¹û²éÑ¯µÄÌõ¼ş×Ö¶ÎÔÚË÷ÒıÖĞ³öÏÖ£¬²éÑ¯»á·Ç³£¿ì¡£
+\begin{Verbatim}[label=MySQL,
+                frame=single]
+SELECT SQL_NO_CACHE count(DISTINCT fax_start_date) 
+    from tbl_fax_records 
+    where fax_start_date > '2010-11-10 00:00:00' and 
+        fax_start_date < '2010-11-10 23:59:59';
 
+\end{Verbatim}
+\newpage
+\begin{Verbatim}[label=PostgreSQL,
+                frame=single]
+SELECT count(DISTINCT fax_start_date) 
+    from tbl_fax_records 
+    where fax_start_date > timestamp '2010-11-10 00:00:00' and 
+        fax_start_date < timestamp '2010-11-10 23:59:59';
+
+\end{Verbatim}
+\begin{table}[H]
+\centering
+\begin{threeparttable}[b]
+\caption{²éÑ¯¡¾µ¥Î»Ãë¡¿}
+\begin{tabularx}{7cm}{Xrr}\hline
+\toprule
+Êı¾İÁ¿ & MySQL & PostgreSQL \\ \hline \hline
+10000 & 0.01 & 0.285795 \\ \hline
+100000 & 0.06 & 0.756912 \\ \hline
+1000000 & 0.37 & 6.334156 \\ \hline
+10000000 & 4.96 & 46.986173  \\ \hline
+\bottomrule
+\end{tabularx}
+\begin{tablenotes}
+\item [±¸×¢] ÉÏÃæSQLµÄ²éÑ¯Ê±¼ä
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
 
 
 
 \noindent\textbf{Reference : }
 
-\noindent \url{http://dev.mysql.com/doc/refman/5.1/zh/storage-engines.html#innodb-tuning} \\
-\url{http://dev.mysql.com/doc/refman/5.1/en/optimization.html} \\
+\indent \url {http://dev.mysql.com/tech-resources/presentations/presentation-oscon2000-20000719/index.html}
+
+\indent \url{http://dev.mysql.com/doc/refman/5.1/zh/storage-engines.html#innodb-tuning}
+
+\indent \url{http://dev.mysql.com/doc/refman/5.1/en/innodb-parameters.html}
+
+\indent \url{http://dev.mysql.com/doc/refman/5.1/en/optimization.html}
+
+\indent \url{http://www.postgresql.org/docs/9.0/static/runtime-config-resource.html}
+
+\indent \url{http://www.postgresql.org/docs/9.0/static/routine-vacuuming.html}
+
+\indent \url{http://blog.ylike.net/html/y2010/115.html}
+
+\indent \url{http://www.betalog.com/post/530/}
+\begin{comment}
 \url{http://dev.mysql.com/doc/refman/5.1/zh/optimization.html}
+\end{comment}
 
 \end{CJK}
 \end{document} 
